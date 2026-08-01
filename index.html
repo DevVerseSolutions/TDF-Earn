@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TDF Earn</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Orbitron:wght@700;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src='//libtl.com/sdk.js' data-zone='11460355' data-sdk='show_11460355'></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#EAF5EC;--bg2:#F4FBF5;--bg3:#FFFFFF;
+  --glass:rgba(255,255,255,0.04);--glassBorder:rgba(255,255,255,0.09);--glassBorderHov:rgba(90,143,105,0.35);
+  --e1:#5A8F69;--e2:#3E7A52;--e3:#2F6B3F;
+  --p1:#8FBC8F;--p2:#7AA88A;
+  --g1:#6FBF82;--g2:#4F9F66;
+  --amber:#FFB800;--red:#FF3D5A;
+  --text:#1F3A2A;--text2:#5F7F6B;--text3:#9CB6A6;
+  --glow-c:rgba(90,143,105,0.25);--glow-p:rgba(143,188,143,0.25);--glow-g:rgba(111,191,130,0.25);
+  --fn-bn:'Hind Siliguri',sans-serif;--fn-en:'Poppins',sans-serif;--fn-hd:'Orbitron',sans-serif;
+  --r16:16px;--r12:12px;
+}
+html,body{height:100%;font-family:var(--fn-bn);color:var(--text);background:var(--bg);overscroll-behavior:none;-webkit-font-smoothing:antialiased;}
+body{max-width:430px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;padding-bottom:72px;position:relative;}
+
+/* BG GRID */
+body::before{content:'';position:fixed;inset:0;background:linear-gradient(180deg,#EAF5EC 0%,#EAF5EC 50%,#EAF5EC 100%),url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(90,143,105,0.04)' stroke-width='1'%3E%3Cpath d='M0 20h40M20 0v40'/%3E%3C/g%3E%3C/svg%3E");background-blend-mode:normal;z-index:-1;pointer-events:none;}
+
+/* LOADING */
+#ls{position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,#EAF5EC,#F4FBF5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.ls-logo{width:88px;height:88px;border-radius:22px;background:linear-gradient(135deg,rgba(90,143,105,0.15),rgba(143,188,143,0.15));border:1.5px solid rgba(90,143,105,0.3);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(90,143,105,0.2),0 0 80px rgba(143,188,143,0.1);}
+.ls-title{font-family:var(--fn-hd);font-size:24px;font-weight:900;background:linear-gradient(90deg,#5A8F69,#8FBC8F);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ls-sub{color:var(--text2);font-size:12px;font-family:var(--fn-en);}
+.ls-ring{width:36px;height:36px;border-radius:50%;border:3px solid rgba(90,143,105,0.2);border-top-color:#5A8F69;animation:kspin .8s linear infinite;box-shadow:0 0 12px rgba(90,143,105,0.3);}
+@keyframes kspin{to{transform:rotate(360deg);}}
+
+/* OVERLAYS */
+.ov-screen{position:fixed;inset:0;z-index:9998;background:linear-gradient(160deg,#EAF5EC,#F4FBF5);display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;gap:18px;}
+.ov-ico{width:80px;height:80px;border-radius:50%;background:rgba(90,143,105,0.1);border:1.5px solid rgba(90,143,105,0.2);display:flex;align-items:center;justify-content:center;}
+.ov-title{font-size:20px;font-weight:700;color:var(--text);}
+.ov-msg{color:var(--text2);font-size:14px;line-height:1.7;max-width:290px;}
+
+/* APP */
+#app{display:none;flex-direction:column;flex:1;}
+
+/* HEADER */
+.hdr{padding:14px 16px 0;position:relative;}
+.hdr-inner{background:linear-gradient(135deg,rgba(90,143,105,0.1),rgba(143,188,143,0.08));border:1.5px solid rgba(90,143,105,0.2);border-radius:20px;padding:18px;backdrop-filter:blur(16px);box-shadow:0 0 40px rgba(90,143,105,0.08),inset 0 1px 0 rgba(255,255,255,0.06);position:relative;overflow:hidden;}
+.hdr-inner::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(90,143,105,0.1) 0%,transparent 70%);top:-80px;right:-60px;pointer-events:none;}
+.hdr-inner::after{content:'';position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(143,188,143,0.08) 0%,transparent 70%);bottom:-60px;left:-30px;pointer-events:none;}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;position:relative;z-index:1;}
+.hdr-user{display:flex;align-items:center;gap:10px;}
+.hdr-ava{width:42px;height:42px;border-radius:50%;border:2px solid rgba(90,143,105,0.4);background:rgba(90,143,105,0.1);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;box-shadow:0 0 14px rgba(90,143,105,0.2);}
+.hdr-ava img{width:100%;height:100%;object-fit:cover;}
+.hdr-name{color:var(--text);font-weight:700;font-size:14px;}
+.hdr-vip{color:var(--e1);font-size:10px;font-family:var(--fn-en);margin-top:1px;text-shadow:0 0 8px var(--e1);}
+.hdr-date{color:var(--text2);font-size:11px;font-family:var(--fn-en);}
+.hdr-bal-lbl{color:var(--text2);font-size:12px;margin-bottom:4px;position:relative;z-index:1;}
+.hdr-bal-amt{font-family:var(--fn-hd);font-size:34px;font-weight:900;background:linear-gradient(90deg,#5A8F69,#6FBF82);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;filter:drop-shadow(0 0 12px rgba(90,143,105,0.4));position:relative;z-index:1;}
+.hdr-stats{display:flex;margin-top:14px;gap:8px;position:relative;z-index:1;}
+.hdr-stat{flex:1;background:rgba(90,143,105,0.05);border:1px solid rgba(90,143,105,0.12);border-radius:12px;padding:9px 6px;text-align:center;}
+.hdr-stat-v{color:var(--text);font-size:13px;font-weight:800;font-family:var(--fn-en);}
+.hdr-stat-l{color:var(--text2);font-size:9px;margin-top:2px;}
+.hdr-badge{position:absolute;top:14px;right:14px;background:linear-gradient(135deg,#FFB800,#FF7A00);color:#000;font-size:9px;font-weight:900;padding:3px 8px;border-radius:20px;font-family:var(--fn-en);z-index:2;}
+
+/* ANNOUNCE */
+.announce{margin:10px 16px 0;background:rgba(255,184,0,0.08);border:1.5px solid rgba(255,184,0,0.3);border-radius:12px;padding:10px 14px;display:none;align-items:center;gap:8px;font-size:12px;color:#FFB800;}
+.announce-dot{width:7px;height:7px;border-radius:50%;background:#FFB800;flex-shrink:0;animation:pulse-d 1.5s ease-in-out infinite;box-shadow:0 0 8px #FFB800;}
+@keyframes pulse-d{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,0.9);backdrop-filter:blur(20px);border-top:1px solid rgba(90,143,105,0.12);display:flex;z-index:100;box-shadow:0 -4px 30px rgba(47,107,63,0.12);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 10px;border:none;background:none;cursor:pointer;color:var(--text3);font-family:var(--fn-bn);font-size:10px;min-height:60px;position:relative;transition:color .2s;}
+.nav-btn.on{color:var(--e1);}
+.nav-btn.on::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:2px;background:linear-gradient(90deg,var(--e1),var(--p1));border-radius:0 0 4px 4px;box-shadow:0 0 8px var(--e1);}
+.nav-ico{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+
+/* TABS */
+.tab{display:none;padding:10px 14px 6px;animation:fadeup .2s ease;}
+.tab.on{display:block;}
+@keyframes fadeup{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* GLASS CARD */
+.gcard{background:var(--glass);border:1.5px solid var(--glassBorder);border-radius:var(--r16);margin-bottom:12px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 4px 24px rgba(90,143,105,0.06),inset 0 1px 0 rgba(255,255,255,0.05);transition:border-color .2s;}
+.gcard:hover{border-color:var(--glassBorderHov);}
+.gc-head{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between;}
+.gc-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--text);}
+.gc-ico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.gc-body{padding:14px 16px;}
+
+/* SECTION TITLE */
+.sec-ttl{padding:14px 0 8px;font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+.sec-ttl::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:linear-gradient(180deg,var(--e1),var(--p1));box-shadow:0 0 8px var(--e1);}
+
+/* ELECTRIC BADGE */
+.e-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--fn-en);}
+.e-badge.cyan{background:rgba(90,143,105,0.12);color:var(--e1);border:1px solid rgba(90,143,105,0.25);}
+.e-badge.green{background:rgba(111,191,130,0.12);color:var(--g1);border:1px solid rgba(111,191,130,0.25);}
+.e-badge.amber{background:rgba(255,184,0,0.12);color:var(--amber);border:1px solid rgba(255,184,0,0.25);}
+.e-badge.purple{background:rgba(143,188,143,0.12);color:#A8D5A8;border:1px solid rgba(143,188,143,0.25);}
+.e-badge.red{background:rgba(255,61,90,0.12);color:var(--red);border:1px solid rgba(255,61,90,0.25);}
+
+/* GLOW BTN */
+.glow-btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:17px;font-weight:700;font-family:var(--fn-bn);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;}
+.glow-btn:active{transform:scale(0.97);}
+.glow-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.glow-btn.electric{background:linear-gradient(135deg,#2F6B3F,#5A8F69,#3E7A52);color:#fff;box-shadow:0 6px 28px rgba(90,143,105,0.35),0 0 0 1px rgba(90,143,105,0.15);}
+.glow-btn.electric:not(:disabled):active{box-shadow:0 3px 14px rgba(90,143,105,0.2);}
+.glow-btn.amber{background:linear-gradient(135deg,#B07A2A,#FFB800,#FF7A00);color:#000;box-shadow:0 6px 28px rgba(255,184,0,0.35);}
+.glow-btn.green{background:linear-gradient(135deg,#003D30,#6FBF82,#4F9F66);color:#000;box-shadow:0 6px 28px rgba(111,191,130,0.3);}
+.btn-shine{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);animation:shine 2.5s ease-in-out infinite;}
+@keyframes shine{0%{left:-100%;}60%,100%{left:150%;}}
+
+/* PROGRESS BAR */
+.prog-wrap{height:5px;background:rgba(90,143,105,0.08);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--e2),var(--e1));border-radius:3px;box-shadow:0 0 8px rgba(90,143,105,0.5);transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+/* COUNTDOWN */
+.cd-box{margin-top:10px;background:rgba(255,184,0,0.06);border:1px solid rgba(255,184,0,0.2);border-radius:10px;padding:9px 14px;display:none;align-items:center;gap:8px;font-size:12px;color:var(--amber);}
+.cd-time{font-family:var(--fn-hd);font-weight:700;font-size:14px;color:var(--amber);text-shadow:0 0 8px var(--amber);}
+
+/* CARD DRAW SYSTEM */
+.card-draw-area{padding:0 16px 16px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.card-draw-row{display:flex;gap:12px;justify-content:center;}
+.flip-card{width:85px;height:120px;perspective:600px;cursor:pointer;flex-shrink:0;}
+.flip-card.used{cursor:default;}
+.flip-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+.flip-front{background:linear-gradient(135deg,rgba(90,143,105,0.12),rgba(143,188,143,0.12));border:1.5px solid rgba(90,143,105,0.25);box-shadow:0 4px 20px rgba(90,143,105,0.10),0 0 20px rgba(90,143,105,0.08),inset 0 1px 0 rgba(255,255,255,0.06);}
+.flip-front:hover:not(.used .flip-front){border-color:rgba(90,143,105,0.5);box-shadow:0 4px 20px rgba(90,143,105,0.10),0 0 24px rgba(90,143,105,0.2);}
+.flip-back{background:linear-gradient(135deg,rgba(111,191,130,0.12),rgba(90,143,105,0.1));border:1.5px solid rgba(111,191,130,0.35);box-shadow:0 4px 20px rgba(90,143,105,0.10),0 0 20px rgba(111,191,130,0.15);transform:rotateY(180deg);}
+.card-face-ico{font-size:28px;}
+.card-face-qm{font-family:var(--fn-hd);font-size:28px;font-weight:900;background:linear-gradient(135deg,#5A8F69,#8FBC8F);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 8px rgba(90,143,105,0.5));}
+.card-face-lbl{font-size:9px;color:var(--text2);font-family:var(--fn-en);}
+.card-prize{font-family:var(--fn-hd);font-size:16px;font-weight:900;color:var(--g1);text-shadow:0 0 12px var(--g1);}
+.card-prize-lbl{font-size:10px;color:var(--g2);}
+.card-draw-hint{font-size:12px;color:var(--text2);text-align:center;}
+.card-used-msg{font-size:12px;color:var(--text2);text-align:center;display:none;}
+
+/* CHECK-IN */
+.ci-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.ci-row::-webkit-scrollbar{display:none;}
+.ci-day{flex-shrink:0;width:43px;height:54px;border-radius:12px;background:rgba(90,143,105,0.06);border:1.5px solid rgba(90,143,105,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;color:var(--text2);transition:all .2s;}
+.ci-day.done{background:rgba(111,191,130,0.08);border-color:rgba(111,191,130,0.3);box-shadow:0 0 12px rgba(111,191,130,0.1);}
+.ci-day.today{background:linear-gradient(135deg,rgba(90,143,105,0.2),rgba(143,188,143,0.15));border-color:rgba(90,143,105,0.5);color:var(--e1);box-shadow:0 0 18px rgba(90,143,105,0.2);}
+.ci-day-n{font-size:14px;font-weight:800;font-family:var(--fn-en);}
+.ci-streak-pill{background:linear-gradient(135deg,rgba(90,143,105,0.15),rgba(143,188,143,0.15));border:1px solid rgba(90,143,105,0.25);color:var(--e1);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;font-family:var(--fn-en);text-shadow:0 0 8px var(--e1);}
+
+/* SPIN WHEEL */
+.spin-section{padding:0 16px 16px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.wheel-outer{position:relative;width:240px;height:240px;}
+.wheel-pointer-wrap{position:absolute;top:-12px;left:50%;transform:translateX(-50%);z-index:10;filter:drop-shadow(0 0 10px rgba(90,143,105,0.8));}
+.wheel-ring{position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(90,143,105,0.25);box-shadow:0 0 30px rgba(90,143,105,0.15),inset 0 0 20px rgba(47,107,63,0.12);}
+#spin-canvas{display:block;border-radius:50%;box-shadow:0 0 40px rgba(90,143,105,0.2);}
+
+/* LEADERBOARD */
+.lb-list{display:flex;flex-direction:column;gap:7px;}
+.lb-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(90,143,105,0.04);border:1px solid rgba(90,143,105,0.08);border-radius:12px;}
+.lb-rank{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;font-family:var(--fn-en);flex-shrink:0;}
+.lb-rank.r1{background:linear-gradient(135deg,#FFD700,#FFA000);color:#000;box-shadow:0 0 16px rgba(255,184,0,0.4);}
+.lb-rank.r2{background:linear-gradient(135deg,#90A4AE,#CFD8DC);color:#000;}
+.lb-rank.r3{background:linear-gradient(135deg,#8D6E63,#BCAAA4);color:#fff;}
+.lb-rank.rn{background:rgba(90,143,105,0.08);color:var(--text2);border:1px solid rgba(90,143,105,0.1);}
+.lb-name{flex:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
+.lb-amt{font-size:13px;font-weight:800;color:var(--g1);font-family:var(--fn-en);text-shadow:0 0 8px rgba(111,191,130,0.3);}
+.you-tag{font-size:9px;background:linear-gradient(135deg,rgba(90,143,105,0.2),rgba(143,188,143,0.2));border:1px solid rgba(90,143,105,0.3);color:var(--e1);padding:2px 8px;border-radius:8px;font-weight:700;flex-shrink:0;}
+
+/* CHART */
+.chart-bars{height:90px;display:flex;align-items:flex-end;gap:5px;}
+.c-bar{flex:1;border-radius:6px 6px 0 0;background:rgba(90,143,105,0.07);border:1px solid rgba(90,143,105,0.1);position:relative;min-height:6px;transition:height .7s cubic-bezier(.4,0,.2,1);}
+.c-bar.today{background:linear-gradient(180deg,rgba(90,143,105,0.6),rgba(143,188,143,0.4));border-color:rgba(90,143,105,0.3);box-shadow:0 0 16px rgba(90,143,105,0.2);}
+.c-lbl{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--text3);font-family:var(--fn-en);white-space:nowrap;}
+
+/* VIP CARDS */
+.vip-strip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}
+.vip-strip::-webkit-scrollbar{display:none;}
+.vip-chip{flex-shrink:0;padding:10px 14px;border-radius:16px;font-size:11px;font-weight:700;font-family:var(--fn-en);display:flex;flex-direction:column;align-items:center;gap:4px;border:1.5px solid transparent;white-space:nowrap;min-width:80px;}
+.vip-chip .vip-n{font-size:18px;}
+.vip-chip.bronze{background:rgba(191,110,0,0.1);border-color:rgba(191,110,0,0.3);color:#FFB347;}
+.vip-chip.silver{background:rgba(144,164,174,0.1);border-color:rgba(144,164,174,0.3);color:#B0BEC5;}
+.vip-chip.gold{background:rgba(255,184,0,0.1);border-color:rgba(255,184,0,0.3);color:#FFD700;}
+.vip-chip.diamond{background:rgba(143,188,143,0.1);border-color:rgba(143,188,143,0.3);color:#A8D5A8;}
+.vip-chip.active-vip{box-shadow:0 0 20px currentColor;transform:scale(1.04);}
+
+/* TASK */
+.task-list{display:flex;flex-direction:column;gap:8px;}
+.task-item{display:flex;align-items:center;gap:12px;padding:13px;background:rgba(90,143,105,0.04);border:1px solid rgba(90,143,105,0.1);border-radius:14px;}
+.task-ico{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(90,143,105,0.15),rgba(143,188,143,0.15));border:1px solid rgba(90,143,105,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.task-name{font-size:13px;font-weight:600;color:var(--text);}
+.task-rew{font-size:11px;color:var(--g1);font-weight:700;margin-top:2px;font-family:var(--fn-en);text-shadow:0 0 6px rgba(111,191,130,0.3);}
+.claim-btn{padding:8px 14px;border:none;border-radius:10px;background:linear-gradient(135deg,rgba(90,143,105,0.2),rgba(143,188,143,0.2));border:1px solid rgba(90,143,105,0.3);color:var(--e1);font-size:12px;font-weight:700;font-family:var(--fn-bn);cursor:pointer;flex-shrink:0;transition:all .15s;text-shadow:0 0 8px var(--e1);box-shadow:0 0 12px rgba(90,143,105,0.1);}
+.claim-btn:active{transform:scale(0.95);}
+.claim-btn.done{background:rgba(90,143,105,0.04);border-color:rgba(255,255,255,0.08);color:var(--text3);cursor:default;box-shadow:none;text-shadow:none;}
+
+/* REFERRAL */
+.ref-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.ref-stat-card{background:var(--glass);border:1px solid var(--glassBorder);border-radius:14px;padding:14px;text-align:center;box-shadow:0 4px 16px rgba(90,143,105,0.06);}
+.ref-stat-v{font-size:22px;font-weight:900;color:var(--e1);font-family:var(--fn-hd);text-shadow:0 0 12px rgba(90,143,105,0.4);}
+.ref-stat-l{font-size:10px;color:var(--text2);margin-top:3px;}
+.ref-box{margin-bottom:10px;padding:13px;background:rgba(90,143,105,0.05);border:1.5px solid rgba(90,143,105,0.15);border-radius:13px;display:flex;align-items:center;gap:10px;}
+.ref-link-txt{font-size:11px;color:var(--e1);font-family:var(--fn-en);flex:1;word-break:break-all;line-height:1.6;}
+.ref-ico-btn{width:38px;height:38px;border-radius:10px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s;flex-shrink:0;}
+.ref-ico-btn:active{transform:scale(0.9);}
+.ref-ico-btn.copy{background:linear-gradient(135deg,rgba(90,143,105,0.2),rgba(90,143,105,0.1));border:1px solid rgba(90,143,105,0.3);}
+.ref-ico-btn.share{background:rgba(143,188,143,0.15);border:1px solid rgba(143,188,143,0.3);}
+.ref-user-item{display:flex;align-items:center;gap:10px;padding:10px 13px;background:rgba(90,143,105,0.04);border:1px solid rgba(90,143,105,0.08);border-radius:12px;margin-bottom:7px;}
+.ref-ava{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,rgba(90,143,105,0.2),rgba(143,188,143,0.2));border:1px solid rgba(90,143,105,0.2);display:flex;align-items:center;justify-content:center;color:var(--e1);font-size:14px;font-weight:800;flex-shrink:0;}
+.status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.status-dot.v{background:var(--g1);box-shadow:0 0 8px var(--g1);}
+.status-dot.p{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+
+/* WALLET */
+.wallet-hero{margin-bottom:12px;padding:20px;background:linear-gradient(135deg,rgba(90,143,105,0.1),rgba(143,188,143,0.08));border:1.5px solid rgba(90,143,105,0.2);border-radius:18px;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(90,143,105,0.06),inset 0 1px 0 rgba(255,255,255,0.04);}
+.wallet-hero::before{content:'';position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(90,143,105,0.12) 0%,transparent 70%);top:-50px;right:-30px;}
+.wallet-hero-lbl{color:var(--text2);font-size:12px;}
+.wallet-hero-amt{font-family:var(--fn-hd);font-size:34px;font-weight:900;background:linear-gradient(90deg,#5A8F69,#6FBF82);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-top:4px;filter:drop-shadow(0 0 12px rgba(90,143,105,0.3));}
+.wallet-hero-min{color:var(--text2);font-size:11px;margin-top:6px;}
+.method-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.method-card{display:flex;align-items:center;gap:12px;padding:13px;border:1.5px solid rgba(90,143,105,0.1);border-radius:13px;background:rgba(90,143,105,0.04);cursor:pointer;transition:all .18s;}
+.method-card.sel{border-color:rgba(90,143,105,0.4);background:rgba(90,143,105,0.06);box-shadow:0 0 20px rgba(90,143,105,0.08);}
+.method-ico-w{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,rgba(90,143,105,0.15),rgba(143,188,143,0.15));border:1px solid rgba(90,143,105,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.method-nm{font-size:13px;font-weight:700;color:var(--text);}
+.method-mn{font-size:11px;color:var(--text2);margin-top:2px;}
+.method-chk{margin-left:auto;width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(90,143,105,0.2);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.method-chk.on{background:var(--e1);border-color:var(--e1);box-shadow:0 0 12px rgba(90,143,105,0.4);}
+.f-lbl{font-size:12px;font-weight:600;margin-bottom:6px;display:block;color:var(--text2);}
+.f-inp{width:100%;padding:12px 14px;border:1.5px solid rgba(90,143,105,0.15);border-radius:12px;font-size:14px;font-family:var(--fn-bn);outline:none;background:rgba(90,143,105,0.06);color:var(--text);transition:border-color .2s;margin-bottom:10px;}
+.f-inp:focus{border-color:rgba(90,143,105,0.4);box-shadow:0 0 12px rgba(90,143,105,0.1);}
+.w-hist-item{display:flex;align-items:center;gap:10px;padding:11px 13px;background:rgba(90,143,105,0.04);border:1px solid rgba(90,143,105,0.08);border-radius:12px;margin-bottom:7px;}
+.w-hist-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+.w-hist-nm{font-size:12px;font-weight:600;color:var(--text);}
+.w-hist-dt{font-size:10px;color:var(--text2);}
+.w-hist-amt{font-size:13px;font-weight:800;font-family:var(--fn-en);margin-left:auto;}
+.w-hist-amt.p{color:var(--amber);}.w-hist-amt.a{color:var(--g1);}.w-hist-amt.r{color:var(--red);}
+
+/* PROFILE */
+.prof-top{background:linear-gradient(135deg,rgba(90,143,105,0.08),rgba(143,188,143,0.06));border:1.5px solid rgba(90,143,105,0.15);border-radius:18px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px;position:relative;overflow:hidden;}
+.prof-ava-lg{width:80px;height:80px;border-radius:50%;border:2px solid rgba(90,143,105,0.4);background:rgba(90,143,105,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:var(--e1);font-family:var(--fn-en);overflow:hidden;box-shadow:0 0 24px rgba(90,143,105,0.2);}
+.prof-ava-lg img{width:100%;height:100%;object-fit:cover;}
+.prof-fullname{color:var(--text);font-size:20px;font-weight:800;}
+.prof-un{color:var(--text2);font-size:12px;}
+.prof-vip-badge{background:linear-gradient(135deg,rgba(90,143,105,0.12),rgba(143,188,143,0.12));border:1px solid rgba(90,143,105,0.25);color:var(--e1);padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--fn-en);text-shadow:0 0 8px var(--e1);}
+.prof-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.prof-stat{background:var(--glass);border:1px solid var(--glassBorder);border-radius:13px;padding:13px;text-align:center;}
+.prof-stat-v{font-size:18px;font-weight:900;color:var(--e1);font-family:var(--fn-en);text-shadow:0 0 10px rgba(90,143,105,0.3);}
+.prof-stat-l{font-size:10px;color:var(--text2);margin-top:2px;}
+.tx-item{display:flex;align-items:center;gap:10px;padding:10px 13px;background:rgba(90,143,105,0.04);border:1px solid rgba(90,143,105,0.07);border-radius:12px;margin-bottom:7px;}
+.tx-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+.tx-note{font-size:12px;font-weight:500;color:var(--text);}
+.tx-date{font-size:10px;color:var(--text2);margin-top:1px;}
+.tx-amt{font-size:13px;font-weight:800;font-family:var(--fn-en);margin-left:auto;white-space:nowrap;}
+.tx-amt.pos{color:var(--g1);}.tx-amt.neg{color:var(--red);}
+
+/* TOAST */
+#toasts{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;flex-direction:column;gap:8px;width:calc(100% - 24px);max-width:400px;pointer-events:none;}
+.toast{padding:12px 16px;border-radius:12px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(47,107,63,0.12);display:flex;align-items:center;gap:10px;animation:tslide .25s ease;backdrop-filter:blur(12px);}
+.toast.s{background:rgba(220,240,225,0.9);border:1px solid rgba(111,191,130,0.3);color:var(--g1);}
+.toast.e{background:rgba(250,225,225,0.9);border:1px solid rgba(255,61,90,0.3);color:var(--red);}
+.toast.i{background:rgba(220,235,225,0.9);border:1px solid rgba(90,143,105,0.3);color:var(--e1);}
+.toast.w{background:rgba(255,245,220,0.9);border:1px solid rgba(255,184,0,0.3);color:var(--amber);}
+@keyframes tslide{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.toast.out{animation:tout .22s ease forwards;}
+@keyframes tout{to{opacity:0;transform:translateY(-8px);}}
+
+/* SPIN RESULT MODAL */
+#spin-result-modal{position:fixed;inset:0;background:rgba(31,58,42,0.35);backdrop-filter:blur(10px);z-index:5000;display:none;align-items:center;justify-content:center;padding:20px;}
+#spin-result-modal.open{display:flex;}
+.srm-box{background:linear-gradient(135deg,rgba(90,143,105,0.1),rgba(143,188,143,0.1));border:1.5px solid rgba(90,143,105,0.25);border-radius:24px;padding:32px 28px;max-width:300px;width:100%;text-align:center;box-shadow:0 0 60px rgba(90,143,105,0.15),0 32px 80px rgba(47,107,63,0.12);animation:pop .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(20px);}
+@keyframes pop{from{transform:scale(.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+.srm-ico{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,rgba(255,184,0,0.2),rgba(255,122,0,0.15));border:1.5px solid rgba(255,184,0,0.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:34px;box-shadow:0 0 30px rgba(255,184,0,0.2);}
+.srm-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;}
+.srm-amt{font-family:var(--fn-hd);font-size:48px;font-weight:900;background:linear-gradient(90deg,#6FBF82,#5A8F69);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-2px;line-height:1;filter:drop-shadow(0 0 16px rgba(111,191,130,0.4));}
+.srm-unit{font-size:14px;color:var(--text2);}
+.srm-btn{margin-top:20px;width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,rgba(90,143,105,0.2),rgba(143,188,143,0.2));border:1px solid rgba(90,143,105,0.3);color:var(--e1);font-size:15px;font-weight:700;font-family:var(--fn-bn);cursor:pointer;text-shadow:0 0 8px var(--e1);}
+
+/* EMPTY */
+.empty-box{display:flex;flex-direction:column;align-items:center;gap:8px;padding:28px 16px;color:var(--text3);}
+.empty-box p{font-size:13px;text-align:center;}
+
+/* SPINNER INLINE */
+.spin-sm{width:16px;height:16px;border:2px solid rgba(90,143,105,0.2);border-top-color:var(--e1);border-radius:50%;animation:kspin .7s linear infinite;display:inline-block;}
+
+/* NEON DIVIDER */
+.ndivider{height:1px;background:linear-gradient(90deg,transparent,rgba(90,143,105,0.2),transparent);margin:4px 0 14px;}
+
+/* PREMIUM GLASSY THEME */
+:root{
+  --bg:#EAF5EC;--bg2:#F4FBF5;--bg3:#FFFFFF;
+  --tea-50:#F4FBF5;--tea-100:#E5F2E8;--tea-200:#CFE4D5;--tea-300:#A8D0B4;
+  --tea-400:#7DB68F;--tea-500:#5A8F69;--tea-600:#3E7A52;--tea-700:#2F6B3F;--tea-800:#1F4A2C;
+  --glass:rgba(255,255,255,0.55);
+  --glassBorder:rgba(255,255,255,0.85);
+  --glassBorderHov:rgba(90,143,105,0.45);
+  --glassDeep:rgba(255,255,255,0.72);
+  --inkLine:rgba(47,107,63,0.10);
+  --text:#1F3A2A;--text2:#5F7F6B;--text3:#9CB6A6;
+  --shadow-glass:0 8px 32px rgba(47,107,63,0.10),0 1px 0 rgba(255,255,255,0.9) inset;
+  --shadow-elev:0 18px 50px -18px rgba(47,107,63,0.35),0 6px 18px rgba(47,107,63,0.08);
+  --grad-tea:linear-gradient(135deg,#5A8F69 0%,#3E7A52 50%,#2F6B3F 100%);
+  --grad-tea-soft:linear-gradient(135deg,rgba(125,182,143,0.22),rgba(255,255,255,0.55) 60%,rgba(207,228,213,0.55));
+  --grad-tea-text:linear-gradient(90deg,#2F6B3F,#5A8F69 50%,#7DB68F);
+}
+html,body{background:var(--bg)!important;color:var(--text);}
+body{padding-bottom:84px!important;}
+body::before{
+  background:
+    radial-gradient(900px 600px at 12% -10%,rgba(125,182,143,0.35),transparent 60%),
+    radial-gradient(700px 500px at 110% 0%,rgba(207,228,213,0.55),transparent 60%),
+    radial-gradient(800px 600px at 50% 110%,rgba(168,208,180,0.32),transparent 60%),
+    linear-gradient(180deg,#F4FBF5 0%,#E8F5EA 50%,#DDEEDF 100%)!important;
+}
+
+#ls{background:radial-gradient(circle at 50% 35%,#F4FBF5,#DDEEDF)!important;}
+.ls-logo{background:linear-gradient(135deg,rgba(125,182,143,0.45),rgba(255,255,255,0.8))!important;border:1.5px solid rgba(255,255,255,0.9)!important;box-shadow:0 20px 60px -20px rgba(47,107,63,0.5),inset 0 1px 0 rgba(255,255,255,0.9)!important;}
+.ls-title{background-image:var(--grad-tea-text)!important;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ls-sub{color:var(--text2)!important;}
+.ls-ring{border-color:rgba(90,143,105,0.18)!important;border-top-color:#3E7A52!important;box-shadow:0 0 18px rgba(90,143,105,0.25)!important;}
+.ov-screen{background:radial-gradient(circle at 50% 30%,#F4FBF5,#DDEEDF)!important;}
+.ov-ico{background:rgba(255,255,255,0.7)!important;border:1.5px solid rgba(90,143,105,0.25)!important;box-shadow:0 10px 30px -10px rgba(47,107,63,0.25)!important;}
+.ov-title{color:var(--text)!important;}.ov-msg{color:var(--text2)!important;}
+
+.hdr-inner{
+  background:linear-gradient(135deg,rgba(255,255,255,0.85),rgba(229,242,232,0.78))!important;
+  border:1.5px solid rgba(255,255,255,0.95)!important;
+  box-shadow:0 18px 50px -20px rgba(47,107,63,0.28),inset 0 1px 0 rgba(255,255,255,0.95)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  backdrop-filter:blur(22px) saturate(160%);
+}
+.hdr-inner::before{background:radial-gradient(circle,rgba(125,182,143,0.35) 0%,transparent 70%)!important;}
+.hdr-inner::after{background:radial-gradient(circle,rgba(168,208,180,0.32) 0%,transparent 70%)!important;}
+.hdr-ava{border:2px solid rgba(90,143,105,0.4)!important;background:linear-gradient(135deg,rgba(125,182,143,0.3),rgba(255,255,255,0.6))!important;box-shadow:0 6px 16px -4px rgba(47,107,63,0.3)!important;color:#2F6B3F;}
+.hdr-name{color:var(--text)!important;}
+.hdr-vip{color:#2F6B3F!important;text-shadow:none!important;font-weight:700;}
+.hdr-bal-lbl,.hdr-date{color:var(--text2)!important;}
+.hdr-bal-amt{background-image:var(--grad-tea-text)!important;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 6px 14px rgba(47,107,63,0.18))!important;}
+.hdr-stat{background:rgba(255,255,255,0.7)!important;border:1px solid rgba(255,255,255,0.9)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 4px 12px -6px rgba(47,107,63,0.15)!important;}
+.hdr-stat-v{color:#2F6B3F!important;}
+.hdr-stat-l{color:var(--text2)!important;}
+
+.gcard{
+  background:linear-gradient(135deg,rgba(255,255,255,0.78),rgba(244,251,245,0.7))!important;
+  border:1.5px solid rgba(255,255,255,0.95)!important;
+  box-shadow:0 12px 32px -16px rgba(47,107,63,0.22),inset 0 1px 0 rgba(255,255,255,0.95)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%);
+  backdrop-filter:blur(18px) saturate(150%);
+  border-radius:20px!important;
+}
+.gcard:hover{border-color:rgba(125,182,143,0.5)!important;}
+.gc-title{color:var(--text)!important;}
+
+.sec-ttl{color:var(--text)!important;}
+.sec-ttl::before{background:linear-gradient(180deg,#5A8F69,#2F6B3F)!important;box-shadow:0 0 8px rgba(90,143,105,0.6)!important;}
+
+.e-badge.cyan{background:rgba(90,143,105,0.14)!important;color:#2F6B3F!important;border:1px solid rgba(90,143,105,0.3)!important;}
+.e-badge.green{background:rgba(111,191,130,0.18)!important;color:#1F5E3A!important;border:1px solid rgba(111,191,130,0.35)!important;}
+.e-badge.purple{background:rgba(168,208,180,0.25)!important;color:#2F6B3F!important;border:1px solid rgba(143,188,143,0.4)!important;}
+
+.glow-btn{font-weight:800!important;letter-spacing:0.2px;}
+.glow-btn.electric{background:linear-gradient(135deg,#3E7A52,#5A8F69 60%,#7DB68F)!important;color:#fff!important;box-shadow:0 14px 32px -10px rgba(47,107,63,0.55),inset 0 1px 0 rgba(255,255,255,0.35)!important;}
+.glow-btn.green{background:linear-gradient(135deg,#2F6B3F,#4F9F66 60%,#7DB68F)!important;color:#fff!important;box-shadow:0 14px 32px -10px rgba(79,159,102,0.55),inset 0 1px 0 rgba(255,255,255,0.35)!important;}
+.glow-btn.amber{color:#3B2A00!important;box-shadow:0 14px 32px -10px rgba(255,184,0,0.5)!important;}
+
+.prog-wrap{background:rgba(90,143,105,0.12)!important;}
+.prog-fill{background:linear-gradient(90deg,#5A8F69,#2F6B3F)!important;box-shadow:0 0 10px rgba(90,143,105,0.45)!important;}
+
+.cd-box{background:rgba(255,184,0,0.10)!important;border-color:rgba(255,184,0,0.35)!important;}
+
+.flip-front{background:linear-gradient(135deg,rgba(255,255,255,0.85),rgba(229,242,232,0.7))!important;border:1.5px solid rgba(255,255,255,0.95)!important;box-shadow:0 10px 26px -10px rgba(47,107,63,0.3),inset 0 1px 0 rgba(255,255,255,0.95)!important;}
+.flip-back{background:linear-gradient(135deg,#5A8F69,#2F6B3F)!important;border:1.5px solid rgba(255,255,255,0.5)!important;color:#fff;}
+.flip-back .card-face-lbl,.flip-back .card-prize-lbl{color:rgba(255,255,255,0.85)!important;}
+.flip-back .card-prize{color:#fff!important;text-shadow:0 2px 10px rgba(0,0,0,0.25)!important;}
+.card-face-qm{background-image:var(--grad-tea-text)!important;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 6px rgba(47,107,63,0.3))!important;}
+.card-face-lbl{color:var(--text2)!important;}
+.card-draw-hint{color:var(--text2)!important;}
+
+.ci-day{background:rgba(255,255,255,0.6)!important;border:1.5px solid rgba(255,255,255,0.9)!important;color:var(--text2)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.9)!important;}
+.ci-day.done{background:linear-gradient(135deg,rgba(111,191,130,0.22),rgba(255,255,255,0.6))!important;border-color:rgba(111,191,130,0.5)!important;color:#1F5E3A!important;}
+.ci-day.today{background:linear-gradient(135deg,#5A8F69,#2F6B3F)!important;border-color:#2F6B3F!important;color:#fff!important;box-shadow:0 8px 22px -6px rgba(47,107,63,0.5)!important;}
+.ci-streak-pill{background:linear-gradient(135deg,#5A8F69,#3E7A52)!important;border:1px solid rgba(255,255,255,0.6)!important;color:#fff!important;text-shadow:none!important;box-shadow:0 6px 14px -4px rgba(47,107,63,0.4)!important;}
+
+.wheel-ring{border:2px solid rgba(125,182,143,0.4)!important;box-shadow:0 0 35px rgba(125,182,143,0.25),inset 0 0 18px rgba(255,255,255,0.5)!important;}
+#spin-canvas{box-shadow:0 18px 40px -10px rgba(47,107,63,0.35),0 0 0 4px rgba(255,255,255,0.6)!important;}
+
+.lb-item{background:rgba(255,255,255,0.65)!important;border:1px solid rgba(255,255,255,0.9)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 6px 14px -8px rgba(47,107,63,0.15)!important;}
+.lb-rank.rn{background:rgba(90,143,105,0.10)!important;color:var(--text2)!important;border:1px solid rgba(90,143,105,0.18)!important;}
+.lb-name{color:var(--text)!important;}
+.lb-amt{color:#2F6B3F!important;text-shadow:none!important;}
+.you-tag{background:linear-gradient(135deg,#5A8F69,#3E7A52)!important;border:none!important;color:#fff!important;}
+
+.c-bar{background:rgba(90,143,105,0.12)!important;border:1px solid rgba(90,143,105,0.18)!important;}
+.c-bar.today{background:linear-gradient(180deg,#7DB68F,#2F6B3F)!important;border-color:#2F6B3F!important;box-shadow:0 0 14px rgba(90,143,105,0.4)!important;}
+.c-lbl{color:var(--text2)!important;}
+
+.vip-chip{background:rgba(255,255,255,0.6)!important;border:1.5px solid rgba(255,255,255,0.9)!important;box-shadow:0 6px 14px -8px rgba(47,107,63,0.2)!important;}
+
+.task-item{background:rgba(255,255,255,0.7)!important;border:1px solid rgba(255,255,255,0.9)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 6px 14px -8px rgba(47,107,63,0.15)!important;}
+.task-ico{background:linear-gradient(135deg,rgba(125,182,143,0.3),rgba(255,255,255,0.6))!important;border:1px solid rgba(255,255,255,0.9)!important;}
+.task-name{color:var(--text)!important;}
+.task-rew{color:#2F6B3F!important;text-shadow:none!important;}
+.claim-btn{background:linear-gradient(135deg,#5A8F69,#2F6B3F)!important;border:none!important;color:#fff!important;text-shadow:none!important;box-shadow:0 8px 18px -6px rgba(47,107,63,0.45)!important;}
+.claim-btn.done{background:rgba(90,143,105,0.10)!important;border:1px solid rgba(90,143,105,0.2)!important;color:var(--text3)!important;box-shadow:none!important;}
+
+.ref-stat-card{background:rgba(255,255,255,0.75)!important;border:1.5px solid rgba(255,255,255,0.95)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 10px 26px -12px rgba(47,107,63,0.18)!important;}
+.ref-stat-v{color:#2F6B3F!important;text-shadow:none!important;}
+.ref-box{background:linear-gradient(135deg,rgba(255,255,255,0.78),rgba(229,242,232,0.7))!important;border:1.5px solid rgba(255,255,255,0.95)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 10px 26px -12px rgba(47,107,63,0.18)!important;}
+.ref-link-txt{color:#2F6B3F!important;}
+.ref-ico-btn.copy{background:linear-gradient(135deg,#5A8F69,#2F6B3F)!important;border:none!important;box-shadow:0 8px 16px -6px rgba(47,107,63,0.45)!important;}
+.ref-ico-btn.copy svg path,.ref-ico-btn.copy svg rect{stroke:#fff!important;}
+.ref-ico-btn.share{background:linear-gradient(135deg,#7DB68F,#5A8F69)!important;border:none!important;box-shadow:0 8px 16px -6px rgba(47,107,63,0.4)!important;}
+.ref-ico-btn.share svg circle,.ref-ico-btn.share svg path{stroke:#fff!important;}
+.ref-user-item{background:rgba(255,255,255,0.7)!important;border:1px solid rgba(255,255,255,0.9)!important;}
+.ref-ava{background:linear-gradient(135deg,#5A8F69,#3E7A52)!important;border:none!important;color:#fff!important;}
+
+.wallet-hero{
+  background:linear-gradient(135deg,#5A8F69 0%,#3E7A52 50%,#2F6B3F 100%)!important;
+  border:1.5px solid rgba(255,255,255,0.4)!important;
+  color:#fff;
+  box-shadow:0 22px 50px -18px rgba(47,107,63,0.55),inset 0 1px 0 rgba(255,255,255,0.35)!important;
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+.wallet-hero::before{background:radial-gradient(circle,rgba(255,255,255,0.25) 0%,transparent 70%)!important;}
+.wallet-hero-lbl,.wallet-hero-min{color:rgba(255,255,255,0.9)!important;}
+.wallet-hero-amt{background-image:linear-gradient(90deg,#fff,#E5F2E8)!important;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.18))!important;}
+.method-card{background:rgba(255,255,255,0.7)!important;border:1.5px solid rgba(255,255,255,0.9)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 8px 18px -8px rgba(47,107,63,0.15)!important;}
+.method-card.sel{border-color:#5A8F69!important;background:linear-gradient(135deg,rgba(125,182,143,0.22),rgba(255,255,255,0.8))!important;box-shadow:0 14px 30px -10px rgba(47,107,63,0.3)!important;}
+.method-ico-w{background:linear-gradient(135deg,#5A8F69,#3E7A52)!important;border:none!important;color:#fff!important;}
+.method-nm{color:var(--text)!important;}
+.method-chk{background:rgba(255,255,255,0.6)!important;border:1.5px solid rgba(90,143,105,0.3)!important;}
+.method-chk.on{background:#3E7A52!important;border-color:#3E7A52!important;color:#fff!important;box-shadow:0 6px 14px -4px rgba(47,107,63,0.45)!important;}
+.f-lbl{color:var(--text)!important;font-weight:600;}
+.f-inp{background:rgba(255,255,255,0.8)!important;border:1.5px solid rgba(255,255,255,0.9)!important;color:var(--text)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 4px 12px -8px rgba(47,107,63,0.15)!important;}
+.f-inp:focus{border-color:#5A8F69!important;box-shadow:0 0 0 3px rgba(125,182,143,0.25),inset 0 1px 0 rgba(255,255,255,0.95)!important;}
+.f-inp::placeholder{color:var(--text3)!important;}
+.w-hist-item{background:rgba(255,255,255,0.7)!important;border:1px solid rgba(255,255,255,0.9)!important;}
+.w-hist-amt.a{color:#2F6B3F!important;}
+
+.prof-top{
+  background:linear-gradient(135deg,rgba(255,255,255,0.85),rgba(229,242,232,0.75))!important;
+  border:1.5px solid rgba(255,255,255,0.95)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 18px 40px -18px rgba(47,107,63,0.25)!important;
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+.prof-ava-lg{background:linear-gradient(135deg,#5A8F69,#2F6B3F)!important;border:3px solid rgba(255,255,255,0.9)!important;color:#fff!important;box-shadow:0 12px 24px -8px rgba(47,107,63,0.45)!important;}
+.prof-fullname{color:var(--text)!important;}
+.prof-un{color:var(--text2)!important;}
+.prof-vip-badge{background:linear-gradient(135deg,#5A8F69,#2F6B3F)!important;border:none!important;color:#fff!important;text-shadow:none!important;box-shadow:0 8px 16px -6px rgba(47,107,63,0.4)!important;}
+.prof-stat{background:rgba(255,255,255,0.75)!important;border:1px solid rgba(255,255,255,0.9)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 6px 14px -8px rgba(47,107,63,0.15)!important;}
+.prof-stat-v{color:#2F6B3F!important;text-shadow:none!important;}
+.tx-item{background:rgba(255,255,255,0.7)!important;border:1px solid rgba(255,255,255,0.9)!important;}
+.tx-note{color:var(--text)!important;}
+.tx-amt.pos{color:#2F6B3F!important;}
+
+.nav{
+  background:rgba(255,255,255,0.78)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  backdrop-filter:blur(24px) saturate(180%);
+  border-top:1px solid rgba(255,255,255,0.9)!important;
+  box-shadow:0 -10px 30px -10px rgba(47,107,63,0.18),inset 0 1px 0 rgba(255,255,255,0.95)!important;
+}
+.nav-btn{color:#7A9587!important;font-weight:600;}
+.nav-btn.on{color:#2F6B3F!important;}
+.nav-btn.on::after{background:linear-gradient(90deg,#5A8F69,#2F6B3F)!important;box-shadow:0 0 8px rgba(90,143,105,0.6)!important;}
+
+.toast{background:rgba(255,255,255,0.88)!important;color:var(--text)!important;border:1px solid rgba(255,255,255,0.95)!important;box-shadow:0 14px 36px -12px rgba(47,107,63,0.3)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);}
+.toast.s{border-left:3px solid #2F6B3F!important;color:#1F5E3A!important;}
+.toast.e{border-left:3px solid #C2410C!important;color:#7C2D12!important;}
+.toast.i{border-left:3px solid #5A8F69!important;color:#2F6B3F!important;}
+.toast.w{border-left:3px solid #B07A2A!important;color:#7C4A00!important;}
+
+#spin-result-modal{background:rgba(31,58,42,0.35)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
+.srm-box{background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(229,242,232,0.9))!important;border:1.5px solid rgba(255,255,255,0.95)!important;box-shadow:0 30px 70px -20px rgba(47,107,63,0.5),inset 0 1px 0 rgba(255,255,255,0.95)!important;}
+.srm-ico{background:linear-gradient(135deg,#FFE082,#FFB300)!important;border:1.5px solid rgba(255,255,255,0.85)!important;box-shadow:0 16px 32px -10px rgba(255,184,0,0.5)!important;}
+.srm-title{color:var(--text2)!important;}
+.srm-amt{background-image:var(--grad-tea-text)!important;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 4px 14px rgba(47,107,63,0.3))!important;}
+.srm-unit{color:var(--text2)!important;}
+.srm-btn{background:linear-gradient(135deg,#5A8F69,#2F6B3F)!important;border:none!important;color:#fff!important;text-shadow:none!important;box-shadow:0 12px 26px -8px rgba(47,107,63,0.5)!important;}
+
+.announce{background:linear-gradient(135deg,rgba(255,224,130,0.4),rgba(255,255,255,0.7))!important;border:1.5px solid rgba(255,184,0,0.4)!important;color:#7C4A00!important;box-shadow:0 8px 18px -10px rgba(255,184,0,0.4)!important;}
+.announce-dot{background:#B07A2A!important;box-shadow:0 0 8px rgba(176,122,42,0.6)!important;}
+
+.spin-sm{border-color:rgba(90,143,105,0.2)!important;border-top-color:#3E7A52!important;}
+.empty-box{color:var(--text3)!important;}
+.ndivider{background:linear-gradient(90deg,transparent,rgba(47,107,63,0.18),transparent)!important;}
+[style*="background:rgba(0,0,0"]{background:rgba(255,255,255,0.7)!important;}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="ls">
+  <div class="ls-logo">
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+      <path d="M26 4L48 16.5V35.5L26 48L4 35.5V16.5L26 4Z" fill="url(#lg1)" opacity="0.9"/>
+      <path d="M26 14L40 21.5V30.5L26 38L12 30.5V21.5L26 14Z" fill="rgba(90,143,105,0.15)"/>
+      <path d="M22 22L30 26L22 30V22Z" fill="white"/>
+      <defs><linearGradient id="lg1" x1="4" y1="4" x2="48" y2="48"><stop stop-color="#5A8F69"/><stop offset="1" stop-color="#8FBC8F"/></linearGradient></defs>
+    </svg>
+  </div>
+  <div class="ls-title">TDF EARN</div>
+  <div class="ls-sub">Loading your earnings...</div>
+  <div class="ls-ring"></div>
+</div>
+
+<!-- MAINTENANCE -->
+<div id="ov-maint" class="ov-screen">
+  <div class="ov-ico"><svg width="34" height="34" fill="none" viewBox="0 0 34 34"><circle cx="17" cy="17" r="13" stroke="#5A8F69" stroke-width="1.8"/><path d="M17 10V18M17 22V24" stroke="#5A8F69" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+  <div class="ov-title">রক্ষণাবেক্ষণ চলছে</div>
+  <p class="ov-msg" id="ov-maint-msg">সাময়িক বন্ধ। একটু পরে আসুন।</p>
+</div>
+
+<!-- BAN -->
+<div id="ov-ban" class="ov-screen">
+  <div class="ov-ico"><svg width="34" height="34" fill="none" viewBox="0 0 34 34"><circle cx="17" cy="17" r="13" stroke="#FF3D5A" stroke-width="1.8"/><path d="M11 11L23 23M23 11L11 23" stroke="#FF3D5A" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+  <div class="ov-title">অ্যাকাউন্ট ব্লক</div>
+  <p class="ov-msg" id="ov-ban-msg">আপনার অ্যাকাউন্ট ব্লক করা হয়েছে।</p>
+</div>
+
+<div id="toasts"></div>
+
+<!-- SPIN RESULT MODAL -->
+<div id="spin-result-modal">
+  <div class="srm-box">
+    <div class="srm-ico">⚡</div>
+    <div class="srm-title">অভিনন্দন! আপনি জিতেছেন</div>
+    <div class="srm-amt" id="srm-amt">0.00</div>
+    <div class="srm-unit">টাকা</div>
+    <button class="srm-btn" onclick="document.getElementById('spin-result-modal').classList.remove('open')">দারুণ! ক্লেম করুন ⚡</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="hdr" style="padding-top:14px;">
+    <div class="hdr-inner">
+      <div class="hdr-badge" id="hdr-badge" style="display:none;">LIVE</div>
+      <div class="hdr-top">
+        <div class="hdr-user">
+          <div class="hdr-ava" id="hdr-ava">
+            <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="7" r="3.5" fill="#5A8F69"/><path d="M3 19C3 15.5 6.1 13 10 13s7 2.5 7 6" stroke="#5A8F69" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div class="hdr-name" id="hdr-name">লোড হচ্ছে…</div>
+            <div class="hdr-vip" id="hdr-vip">সদস্য</div>
+          </div>
+        </div>
+        <div style="color:var(--text2);font-size:11px;font-family:var(--fn-en);" id="hdr-date"></div>
+      </div>
+      <div style="margin-top:14px;">
+        <div class="hdr-bal-lbl">মোট ব্যালেন্স</div>
+        <div class="hdr-bal-amt" id="hdr-bal">৳0.000</div>
+      </div>
+      <div class="hdr-stats">
+        <div class="hdr-stat"><div class="hdr-stat-v" id="hs-w">৳0</div><div class="hdr-stat-l">উত্তোলন</div></div>
+        <div class="hdr-stat"><div class="hdr-stat-v" id="hs-a">0</div><div class="hdr-stat-l">বিজ্ঞাপন</div></div>
+        <div class="hdr-stat"><div class="hdr-stat-v" id="hs-r">0</div><div class="hdr-stat-l">রেফারেল</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="announce" id="announce-bar"><div class="announce-dot"></div><span id="announce-txt"></span></div>
+
+  <!-- HOME -->
+  <div class="tab on" id="t-home">
+
+    <!-- WATCH AD -->
+    <div class="gcard" style="margin-top:12px;">
+      <div class="gc-head">
+        <div class="gc-title">
+          <div class="gc-ico" style="background:rgba(90,143,105,0.1);border:1px solid rgba(90,143,105,0.2);">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="2" stroke="#5A8F69" stroke-width="1.4"/><path d="M6.5 6.5L10.5 8L6.5 9.5V6.5Z" fill="#5A8F69"/></svg>
+          </div>
+          আজকের বিজ্ঞাপন
+        </div>
+        <span class="e-badge cyan" id="ad-earn-badge">৳0.10/টি</span>
+      </div>
+      <div class="gc-body" style="padding-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:8px;">
+          <span>দেখেছেন: <span style="color:var(--e1);font-family:var(--fn-en);font-weight:700;" id="ad-today">0</span></span>
+          <span>সীমা: <span style="color:var(--e1);font-family:var(--fn-en);font-weight:700;" id="ad-limit">10</span></span>
+        </div>
+        <div class="prog-wrap"><div class="prog-fill" id="ad-prog" style="width:0%"></div></div>
+      </div>
+      <div style="padding:0 16px 14px;">
+        <button class="glow-btn electric" id="watch-btn" onclick="watchAd()">
+          <div class="btn-shine"></div>
+          <svg width="22" height="22" fill="none" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="rgba(255,255,255,0.15)"/><path d="M9 7.5L15.5 11L9 14.5V7.5Z" fill="white"/></svg>
+          <span id="watch-txt">বিজ্ঞাপন দেখুন ও আয় করুন</span>
+        </button>
+        <div class="cd-box" id="cd-box">
+          <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" stroke="#FFB800" stroke-width="1.4"/><path d="M7 4.5V7L8.5 8.5" stroke="#FFB800" stroke-width="1.4" stroke-linecap="round"/></svg>
+          পরের রিসেট: <span class="cd-time" id="cd-time">00:00:00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD DRAW SYSTEM -->
+    <div class="gcard">
+      <div class="gc-head">
+        <div class="gc-title">
+          <div class="gc-ico" style="background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.2);">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="2" y="3" width="10" height="12" rx="1.5" stroke="#FFB800" stroke-width="1.4"/><rect x="5" y="1" width="10" height="12" rx="1.5" stroke="#FFB800" stroke-width="1.4" fill="rgba(255,184,0,0.05)"/></svg>
+          </div>
+          ⚡ দৈনিক কার্ড ড্র
+        </div>
+        <span class="e-badge amber">প্রতিদিন ১টি</span>
+      </div>
+      <div class="card-draw-area">
+        <div class="card-draw-row" id="card-draw-row"></div>
+        <div class="card-draw-hint" id="card-draw-hint">একটি কার্ড বেছে নিন ও পুরস্কার জিতুন!</div>
+        <div class="card-used-msg" id="card-used-msg">আজকের কার্ড ড্র ব্যবহার করা হয়েছে ✓</div>
+      </div>
+    </div>
+
+    <!-- CHECK-IN -->
+    <div class="gcard">
+      <div class="gc-head">
+        <div class="gc-title">
+          <div class="gc-ico" style="background:rgba(111,191,130,0.1);border:1px solid rgba(111,191,130,0.2);">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="12" rx="1.5" stroke="#6FBF82" stroke-width="1.4"/><path d="M5 1.5V3.5M11 1.5V3.5M2.5 6.5H13.5" stroke="#6FBF82" stroke-width="1.4" stroke-linecap="round"/><path d="M5.5 10L7 11.5L11 8" stroke="#6FBF82" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          দৈনিক চেক-ইন
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="ci-streak-pill" id="ci-streak">0 দিন</span></div>
+      </div>
+      <div class="gc-body" style="padding-bottom:0;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:10px;">
+          <span>ধারাবাহিক স্ট্রিক</span>
+          <span>পুরস্কার: <span style="color:var(--g1);font-family:var(--fn-en);font-weight:700;" id="ci-rew">৳0.50</span></span>
+        </div>
+        <div class="ci-row" id="ci-strip"></div>
+      </div>
+      <div style="padding:10px 16px 14px;">
+        <button class="glow-btn green" id="ci-btn" onclick="doCheckIn()">চেক-ইন করুন</button>
+      </div>
+    </div>
+
+    <!-- SPIN WHEEL -->
+    <div class="gcard">
+      <div class="gc-head">
+        <div class="gc-title">
+          <div class="gc-ico" style="background:rgba(143,188,143,0.1);border:1px solid rgba(143,188,143,0.2);">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="#A8D5A8" stroke-width="1.4"/><path d="M8 3.5V8.5L11 10" stroke="#A8D5A8" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          ⚡ লাকি স্পিন ওয়ার্ল্ড
+        </div>
+        <span class="e-badge purple">প্রতিদিন একবার</span>
+      </div>
+      <div class="spin-section">
+        <div class="wheel-outer">
+          <div class="wheel-ring"></div>
+          <svg class="wheel-pointer-wrap" width="28" height="36" viewBox="0 0 28 36" style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);z-index:10;">
+            <path d="M14 36L0 0H28L14 36Z" fill="url(#epg)"/>
+            <circle cx="14" cy="7" r="5" fill="#EAF5EC" stroke="#5A8F69" stroke-width="2"/>
+            <defs><linearGradient id="epg" x1="0" y1="0" x2="28" y2="36"><stop stop-color="#5A8F69"/><stop offset="1" stop-color="#8FBC8F"/></linearGradient></defs>
+          </svg>
+          <canvas id="spin-canvas" width="240" height="240"></canvas>
+        </div>
+        <button class="glow-btn amber" id="spin-btn" onclick="doSpin()" style="max-width:240px;">
+          <span id="spin-btn-txt">⚡ স্পিন করুন!</span>
+        </button>
+        <div style="font-size:11px;color:var(--text2);text-align:center;">পুরস্কার: <span style="color:var(--g1);font-family:var(--fn-en);font-weight:700;" id="spin-range">৳0.10 – ৳2.00</span></div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="gcard">
+      <div class="gc-head">
+        <div class="gc-title">
+          <div class="gc-ico" style="background:rgba(90,143,105,0.1);border:1px solid rgba(90,143,105,0.2);">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M2 12L5 8L8 10.5L11 5.5L14 8" stroke="#5A8F69" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          ৭ দিনের আয় বিশ্লেষণ
+        </div>
+      </div>
+      <div class="gc-body">
+        <div class="chart-bars" id="chart-bars"></div>
+        <div style="height:22px;"></div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="gcard">
+      <div class="gc-head">
+        <div class="gc-title">
+          <div class="gc-ico" style="background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.2);">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M2 4H5V13H2V4ZM7 2H10V13H7V2ZM12 7H15V13H12V7Z" fill="#FFB800"/></svg>
+          </div>
+          শীর্ষ উপার্জনকারী
+        </div>
+      </div>
+      <div class="gc-body" style="padding-top:10px;">
+        <div class="lb-list" id="lb-list"><div class="empty-box"><p>লোড হচ্ছে…</p></div></div>
+      </div>
+    </div>
+
+    <!-- VIP -->
+    <div class="gcard">
+      <div class="gc-head">
+        <div class="gc-title">
+          <div class="gc-ico" style="background:rgba(143,188,143,0.1);border:1px solid rgba(143,188,143,0.2);">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M1 11L4 4.5L8 8L12 2.5L15 11H1Z" stroke="#A8D5A8" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          </div>
+          VIP র‍্যাংক সিস্টেম
+        </div>
+      </div>
+      <div class="gc-body" style="padding-top:10px;">
+        <div class="vip-strip" id="vip-strip"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TASK -->
+  <div class="tab" id="t-task">
+    <div class="sec-ttl" style="padding-top:12px;">আজকের টাস্ক</div>
+    <div class="task-list" id="task-list"><div class="empty-box"><p>লোড হচ্ছে…</p></div></div>
+  </div>
+
+  <!-- REFERRAL -->
+  <div class="tab" id="t-ref">
+    <div class="sec-ttl" style="padding-top:12px;">পরিসংখ্যান</div>
+    <div class="ref-stats">
+      <div class="ref-stat-card"><div class="ref-stat-v" id="ref-count">0</div><div class="ref-stat-l">মোট রেফারেল</div></div>
+      <div class="ref-stat-card"><div class="ref-stat-v" id="ref-earn">৳0.00</div><div class="ref-stat-l">রেফারেল আয়</div></div>
+    </div>
+    <div class="sec-ttl">আপনার লিংক</div>
+    <div class="ref-box">
+      <div class="ref-link-txt" id="ref-link">লোড হচ্ছে…</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button class="ref-ico-btn copy" onclick="copyRef()"><svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="#5A8F69" stroke-width="1.4"/><path d="M5 11H3.5C2.9 11 2.5 10.6 2.5 10V3.5C2.5 2.9 2.9 2.5 3.5 2.5H10C10.6 2.5 11 2.9 11 3.5V5" stroke="#5A8F69" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+        <button class="ref-ico-btn share" onclick="shareRef()"><svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="12.5" cy="3.5" r="2" stroke="#A8D5A8" stroke-width="1.3"/><circle cx="3.5" cy="8" r="2" stroke="#A8D5A8" stroke-width="1.3"/><circle cx="12.5" cy="12.5" r="2" stroke="#A8D5A8" stroke-width="1.3"/><path d="M5.5 7L10.5 4.5M5.5 9L10.5 11.5" stroke="#A8D5A8" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">প্রতি রেফারেলে: <span style="color:var(--g1);font-family:var(--fn-en);font-weight:700;" id="ref-bonus">৳5.00</span></div>
+    <div class="sec-ttl">আমন্ত্রিত বন্ধুরা</div>
+    <div id="ref-users"><div class="empty-box" style="padding:20px;"><p>এখনও কেউ নেই</p></div></div>
+  </div>
+
+  <!-- WALLET -->
+  <div class="tab" id="t-wallet">
+    <div class="wallet-hero" style="margin-top:12px;">
+      <div class="wallet-hero-lbl">উত্তোলনযোগ্য ব্যালেন্স</div>
+      <div class="wallet-hero-amt" id="w-bal">৳0.000</div>
+      <div class="wallet-hero-min">সর্বনিম্ন: <span style="font-family:var(--fn-en);" id="w-min">৳50.00</span></div>
+    </div>
+    <div class="sec-ttl">পেমেন্ট পদ্ধতি</div>
+    <div class="method-grid" id="method-grid"><div class="empty-box"><p>লোড হচ্ছে…</p></div></div>
+    <div id="w-form-wrap" style="display:none;">
+      <div class="sec-ttl">উত্তোলন ফর্ম</div>
+      <label class="f-lbl" id="w-acct-lbl">অ্যাকাউন্ট নম্বর</label>
+      <input type="text" class="f-inp" id="w-acct" placeholder="নম্বর দিন">
+      <label class="f-lbl">পরিমাণ (৳)</label>
+      <input type="number" class="f-inp" id="w-amt" placeholder="0.00" step="0.01" oninput="checkWAmt()">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px;" id="w-hint"></div>
+      <div id="w-instr" style="display:none;background:rgba(90,143,105,0.04);border:1px solid rgba(90,143,105,0.12);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:10px;"></div>
+      <button class="glow-btn electric" id="w-submit-btn" onclick="submitW()">উত্তোলন করুন</button>
+      <div style="height:12px;"></div>
+    </div>
+    <div class="sec-ttl">উত্তোলনের ইতিহাস</div>
+    <div id="w-hist"><div class="empty-box" style="padding:20px;"><p>কোনো উত্তোলন নেই</p></div></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="tab" id="t-prof">
+    <div style="margin-top:12px;">
+      <div class="prof-top">
+        <div class="prof-ava-lg" id="prof-ava">?</div>
+        <div class="prof-fullname" id="prof-name">লোড…</div>
+        <div class="prof-un" id="prof-un">@—</div>
+        <div class="prof-vip-badge" id="prof-vip">সাধারণ সদস্য</div>
+      </div>
+      <div class="prof-stats">
+        <div class="prof-stat"><div class="prof-stat-v" id="ps-bal">৳0</div><div class="prof-stat-l">ব্যালেন্স</div></div>
+        <div class="prof-stat"><div class="prof-stat-v" id="ps-earn">৳0</div><div class="prof-stat-l">মোট আয়</div></div>
+        <div class="prof-stat"><div class="prof-stat-v" id="ps-ads">0</div><div class="prof-stat-l">বিজ্ঞাপন</div></div>
+        <div class="prof-stat"><div class="prof-stat-v" id="ps-rearn">৳0</div><div class="prof-stat-l">রেফারেল আয়</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">যোগদান: <span style="color:var(--e1);font-family:var(--fn-en);font-weight:700;" id="prof-join">—</span></div>
+      <div class="sec-ttl">লেনদেনের ইতিহাস</div>
+      <div id="tx-list"><div class="empty-box"><p>কোনো লেনদেন নেই</p></div></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="nav-btn on" id="nb-home" onclick="goTab('home')">
+      <div class="nav-ico"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M2.5 9L10 2.5L17.5 9V18H13V13H7V18H2.5V9Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>হোম
+    </button>
+    <button class="nav-btn" id="nb-task" onclick="goTab('task')">
+      <div class="nav-ico"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 10L9 12L13 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>টাস্ক
+    </button>
+    <button class="nav-btn" id="nb-ref" onclick="goTab('ref')">
+      <div class="nav-ico"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="7.5" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M2 18C2 15 4.5 13 7.5 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M14 11V17M11 14H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>রেফারেল
+    </button>
+    <button class="nav-btn" id="nb-wallet" onclick="goTab('wallet')">
+      <div class="nav-ico"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><rect x="2" y="5.5" width="16" height="11.5" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="13.5" cy="11.5" r="1.5" fill="currentColor"/><path d="M2 9.5H18M5.5 5.5V4C5.5 3.4 5.9 3 6.5 3H13.5C14.1 3 14.5 3.4 14.5 4V5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>ওয়ালেট
+    </button>
+    <button class="nav-btn" id="nb-prof" onclick="goTab('prof')">
+      <div class="nav-ico"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M3 19C3 15.5 6.1 13 10 13s7 2.5 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>প্রোফাইল
+    </button>
+  </nav>
+</div>
+
+<script>
+const FB_CFG={
+  apiKey: "AIzaSyBTEbJOgv9vrIQ1xMBgEizYuoZZ11Z5alI",
+  authDomain: "tdf-earn-f8ca9.firebaseapp.com",
+  databaseURL: "https://tdf-earn-f8ca9-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tdf-earn-f8ca9",
+  storageBucket: "tdf-earn-f8ca9.firebasestorage.app",
+  messagingSenderId: "343366111492",
+  appId: "1:343366111492:web:14c4cfb3edf76f26fbc051",
+  measurementId: "G-HJFFP3S5WP"
+};
+
+// এখানে ভুলটি সংশোধন করা হয়েছে
+firebase.initializeApp(FB_CFG);
+const db=firebase.database(),auth=firebase.auth();
+
+let tgUser=null,uid=null,uData=null,cfg={},selMethod=null,methods={},cdInt=null,spinning=false,wheelAngle=0;
+try{window.Telegram.WebApp.expand();}catch(e){}
+const tg=window.Telegram?.WebApp;
+tgUser=tg?.initDataUnsafe?.user||null;
+const startParam=tg?.initDataUnsafe?.start_param||null;
+
+function $id(i){return document.getElementById(i);}
+function fbt(n,d=3){return '৳'+parseFloat(n||0).toFixed(d);}
+function dhaka(){return new Date().toLocaleString('en-US',{timeZone:'Asia/Dhaka'}).split(',')[0];}
+function hms(ms){const s=Math.floor(ms/1e3);return[Math.floor(s/3600),Math.floor((s%3600)/60),s%60].map(v=>(v+'').padStart(2,'0')).join(':');}
+function toMid(){const d=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Dhaka'}));const m=new Date(d);m.setHours(24,0,0,0);return m-d;}
+function haptic(t='medium'){try{tg?.HapticFeedback?.impactOccurred(t);}catch(e){}}
+function vip(ads){const t=cfg.vipThresholds||{bronze:50,silver:200,gold:500,diamond:1000};if(ads>=t.diamond)return'Diamond VIP';if(ads>=t.gold)return'Gold VIP';if(ads>=t.silver)return'Silver VIP';if(ads>=t.bronze)return'Bronze VIP';return'সাধারণ সদস্য';}
+
+function toast(msg,type='i',dur=3400){
+  const ico={s:'⚡',e:'✕',i:'ℹ',w:'⚠'};
+  const el=document.createElement('div');el.className=`toast ${type}`;
+  el.innerHTML=`<span style="font-size:16px;">${ico[type]||'ℹ'}</span><span>${msg}</span>`;
+  $id('toasts').appendChild(el);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),230);},dur);
+}
+
+function goTab(name){
+  haptic('light');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  $id('t-'+name).classList.add('on');$id('nb-'+name).classList.add('on');
+  if(name==='wallet'){loadMethods();loadWHist();}
+  if(name==='prof'){loadTx();}
+  if(name==='ref'){loadRefUsers();}
+  if(name==='task'){loadTasks();}
+}
+
+/* CARD DRAW SYSTEM */
+const CARD_PRIZES=[0.5,1.0,2.0,0.3,5.0,0.75,1.5,3.0];
+const CARD_EMOJIS=['⚡','💎','🌟','🔥','💰','🎯','🚀','⭐'];
+const CARD_COUNT=3;
+
+function buildCardDraw(){
+  const used=uData?.lastCardDate===dhaka();
+  const row=$id('card-draw-row');
+  const hint=$id('card-draw-hint');
+  const usedMsg=$id('card-used-msg');
+  row.innerHTML='';
+  if(used){
+    hint.style.display='none';usedMsg.style.display='block';
+    for(let i=0;i<CARD_COUNT;i++){
+      const fc=document.createElement('div');fc.className='flip-card used flipped';
+      const fi=document.createElement('div');fi.className='flip-inner';
+      const fb=document.createElement('div');fb.className='flip-front';
+      fb.innerHTML=`<div class="card-face-ico">${CARD_EMOJIS[i]}</div><div class="card-face-lbl">USED</div>`;
+      const bk=document.createElement('div');bk.className='flip-back';
+      bk.innerHTML=`<div class="card-face-ico">✓</div><div class="card-face-lbl" style="color:var(--text2);">সম্পন্ন</div>`;
+      fi.appendChild(fb);fi.appendChild(bk);fc.appendChild(fi);row.appendChild(fc);
+    }
+    return;
+  }
+  hint.style.display='block';usedMsg.style.display='none';
+  for(let i=0;i<CARD_COUNT;i++){
+    const fc=document.createElement('div');fc.className='flip-card';fc.dataset.idx=i;
+    const fi=document.createElement('div');fi.className='flip-inner';
+    const front=document.createElement('div');front.className='flip-front';
+    front.innerHTML=`<div class="card-face-qm">?</div><div class="card-face-lbl">TAP</div>`;
+    const back=document.createElement('div');back.className='flip-back';
+    back.innerHTML=`<div class="card-face-ico">⚡</div><div class="card-prize" id="cp-${i}">৳0</div><div class="card-prize-lbl">আয়!</div>`;
+    fi.appendChild(front);fi.appendChild(back);fc.appendChild(fi);
+    fc.onclick=()=>flipCard(fc,i);
+    row.appendChild(fc);
+  }
+}
+
+let cardPicked=false;
+async function flipCard(cardEl,idx){
+  if(cardPicked||uData?.lastCardDate===dhaka())return;
+  if(cardEl.classList.contains('flipped'))return;
+  cardPicked=true;haptic('medium');
+  const prizes=[];for(let i=0;i<CARD_COUNT;i++){const p=CARD_PRIZES[Math.floor(Math.random()*CARD_PRIZES.length)];prizes.push(p);}
+  const myPrize=prizes[idx];
+  document.querySelectorAll('.flip-card').forEach((c,i)=>{
+    setTimeout(()=>{
+      c.classList.add('flipped','used');c.onclick=null;
+      const cp=$id('cp-'+i);if(cp)cp.textContent=fbt(prizes[i],2);
+    },i===idx?0:500);
+  });
+  setTimeout(()=>{
+    toast(`কার্ড ড্র জিতলেন ${fbt(myPrize,2)}!`,'s');
+    creditCard(myPrize);
+  },800);
+}
+
+async function creditCard(reward){
+  try{
+    await db.ref('users/'+uid).transaction(u=>{if(!u)return u;u.balance=(u.balance||0)+reward;u.totalEarned=(u.totalEarned||0)+reward;u.lastCardDate=dhaka();return u;});
+    await db.ref('transactions').push({userId:uid,type:'bonus',amount:reward,timestamp:Date.now(),note:'দৈনিক কার্ড ড্র বোনাস'});
+  }catch(e){}
+  $id('card-draw-hint').style.display='none';$id('card-used-msg').style.display='block';
+}
+
+/* SPIN WHEEL */
+const W_PRIZES=[0.10,0.50,0.20,1.00,0.30,2.00,0.15,0.75];
+const W_SEGS=[
+  {bg:'#2F6B3F',glow:'rgba(90,143,105,0.8)'},
+  {bg:'#D7EBDC',glow:'rgba(143,188,143,0.8)'},
+  {bg:'#3E7A52',glow:'rgba(111,191,130,0.8)'},
+  {bg:'#B07A2A',glow:'rgba(255,184,0,0.8)'},
+  {bg:'#2F6B3F',glow:'rgba(90,143,105,0.6)'},
+  {bg:'#7AA88A',glow:'rgba(143,188,143,0.9)'},
+  {bg:'#3E7A52',glow:'rgba(111,191,130,0.6)'},
+  {bg:'#B07A2A',glow:'rgba(255,184,0,0.6)'}
+];
+
+function drawWheel(angle){
+  const c=$id('spin-canvas'),ctx=c.getContext('2d');
+  const n=W_PRIZES.length,cx=120,cy=120,r=112,arc=(2*Math.PI)/n;
+  ctx.clearRect(0,0,240,240);
+  for(let i=0;i<n;i++){
+    const s=angle+i*arc,e=s+arc;
+    const seg=W_SEGS[i];
+    const grd=ctx.createLinearGradient(cx,cy,cx+Math.cos(s+arc/2)*r,cy+Math.sin(s+arc/2)*r);
+    grd.addColorStop(0,'rgba(47,107,63,0.12)');grd.addColorStop(1,seg.bg);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);ctx.closePath();
+    ctx.fillStyle=grd;ctx.fill();
+    ctx.strokeStyle='rgba(90,143,105,0.25)';ctx.lineWidth=2;ctx.stroke();
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(s+arc/2);ctx.translate(r*0.66,0);ctx.rotate(Math.PI/2);
+    ctx.shadowColor=seg.glow;ctx.shadowBlur=10;
+    ctx.fillStyle='rgba(255,255,255,0.95)';ctx.font='bold 13px Poppins,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('৳'+W_PRIZES[i].toFixed(2),0,0);
+    ctx.restore();
+  }
+  const g=ctx.createRadialGradient(cx,cy,0,cx,cy,24);
+  g.addColorStop(0,'#F4FBF5');g.addColorStop(1,'#EAF5EC');
+  ctx.beginPath();ctx.arc(cx,cy,24,0,2*Math.PI);
+  ctx.shadowColor='rgba(90,143,105,0.5)';ctx.shadowBlur=15;
+  ctx.fillStyle=g;ctx.fill();ctx.shadowBlur=0;
+  ctx.strokeStyle='rgba(90,143,105,0.5)';ctx.lineWidth=2.5;ctx.stroke();
+  ctx.fillStyle='#5A8F69';ctx.font='bold 9px Poppins';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(90,143,105,0.8)';ctx.shadowBlur=8;
+  ctx.fillText('TDF',cx,cy);ctx.shadowBlur=0;
+}
+drawWheel(0);
+
+async function doSpin(){
+  if(spinning)return;
+  if(uData?.lastSpinDate===dhaka()){toast('আজ স্পিন করা হয়েছে।','w');return;}
+  spinning=true;haptic('medium');
+  $id('spin-btn').disabled=true;$id('spin-btn-txt').textContent='⚡ ঘুরছে…';
+  const mn=parseFloat(cfg.spinMinReward||0.1),mx=parseFloat(cfg.spinMaxReward||2);
+  const reward=parseFloat((Math.random()*(mx-mn)+mn).toFixed(3));
+  const idx=W_PRIZES.reduce((b,p,i)=>Math.abs(p-reward)<Math.abs(W_PRIZES[b]-reward)?i:b,0);
+  const n=W_PRIZES.length,arc=(2*Math.PI)/n;
+  const s0=wheelAngle,s1=s0+(2*Math.PI*7)+(2*Math.PI-((idx*arc+(arc/2))+s0%(2*Math.PI)));
+  const dur=4500,t0=performance.now();
+  function frame(now){
+    const t=Math.min((now-t0)/dur,1),ease=1-Math.pow(1-t,4);
+    wheelAngle=s0+(s1-s0)*ease;drawWheel(wheelAngle);
+    if(t<1){requestAnimationFrame(frame);}
+    else{spinning=false;showSpinResult(reward);creditSpin(reward);}
+  }
+  requestAnimationFrame(frame);
+}
+
+function showSpinResult(amt){
+  haptic('success');$id('srm-amt').textContent=parseFloat(amt).toFixed(3);
+  $id('spin-result-modal').classList.add('open');
+}
+async function creditSpin(reward){
+  try{
+    await db.ref('users/'+uid).transaction(u=>{if(!u)return u;u.balance=(u.balance||0)+reward;u.totalEarned=(u.totalEarned||0)+reward;u.lastSpinDate=dhaka();u.spinCount=(u.spinCount||0)+1;return u;});
+    await db.ref('transactions').push({userId:uid,type:'bonus',amount:reward,timestamp:Date.now(),note:'লাকি স্পিন বোনাস'});
+  }catch(e){}
+  $id('spin-btn-txt').textContent='স্পিন সম্পন্ন ✓';
+}
+
+/* INIT */
+async function init(){
+  try{await auth.signInAnonymously();}catch(e){}
+  try{cfg=(await db.ref('settings').once('value')).val()||{};}
+  catch(e){showErr('Firebase সংযোগ ব্যর্থ। databaseURL চেক করুন।');return;}
+  if(cfg.maintenance){$id('ov-maint-msg').textContent=cfg.maintenanceMessage||'সাময়িক বন্ধ।';$id('ov-maint').style.display='flex';$id('ls').style.display='none';return;}
+  if(cfg.adSdkUrl){const s=document.createElement('script');s.src=cfg.adSdkUrl;s.async=true;document.head.appendChild(s);}
+  if(cfg.announcement){$id('announce-txt').textContent=cfg.announcement;$id('announce-bar').style.display='flex';}
+  $id('hdr-date').textContent=new Date().toLocaleDateString('bn-BD',{timeZone:'Asia/Dhaka',day:'numeric',month:'short'});
+  await initUser();
+}
+
+function showErr(msg){$id('ls').innerHTML=`<div style="text-align:center;padding:32px;color:#1F3A2A;max-width:300px;"><div style="font-size:48px;margin-bottom:14px;">⚠️</div><h2 style="font-size:18px;margin-bottom:10px;color:#FF3D5A;">সংযোগ ব্যর্থ</h2><p style="font-size:13px;opacity:.7;line-height:1.7;">${msg}</p></div>`;}
+
+async function initUser(){
+  if(!tgUser)tgUser={id:'demo_'+Date.now(),first_name:'ডেমো',last_name:'',username:'demo_user',photo_url:''};
+  uid=String(tgUser.id);
+  try{
+    const ref=db.ref('users/'+uid);
+    const snap=await ref.once('value');
+    if(!snap.exists())await createUser(ref);
+    else{
+      uData=snap.val();const td=dhaka();
+      if(uData.lastAdDate!==td){await ref.update({todayAds:0,lastAdDate:td});uData.todayAds=0;uData.lastAdDate=td;}
+      if(uData.isBanned){showBan(uData.banReason);$id('ls').style.display='none';return;}
+    }
+    ref.on('value',snap=>{if(!snap.exists())return;const nd=snap.val();if(nd.isBanned){showBan(nd.banReason);return;}uData=nd;renderAll();});
+    renderAll();$id('ls').style.display='none';$id('app').style.display='flex';
+    $id('hdr-badge').style.display='block';
+    loadLB();buildChart();
+  }catch(e){showErr(e.message);}
+}
+
+async function createUser(ref){
+  const td=dhaka();
+  const u={name:(tgUser.first_name||'')+(tgUser.last_name?' '+tgUser.last_name:''),username:tgUser.username||'',photo:tgUser.photo_url||'',balance:0,totalEarned:0,referralEarned:0,todayAds:0,lastAdDate:td,totalAds:0,referredBy:null,referralCount:0,referralStatus:null,joinDate:Date.now(),isBanned:false,banReason:'',lastCheckIn:null,checkInStreak:0,spinCount:0,lastSpinDate:null,lastCardDate:null};
+  if(startParam&&startParam!==uid){
+    const rs=await db.ref('users/'+startParam).once('value');
+    const dup=await db.ref('referrals/'+startParam+'/'+uid).once('value');
+    if(rs.exists()&&!dup.exists()){
+      u.referredBy=startParam;
+      if(cfg.instantReferralBonus!==false){
+        u.referralStatus='verified';const bonus=parseFloat(cfg.referralBonus||5);
+        await db.ref('users/'+startParam).transaction(r=>{if(!r)return r;r.balance=(r.balance||0)+bonus;r.totalEarned=(r.totalEarned||0)+bonus;r.referralEarned=(r.referralEarned||0)+bonus;r.referralCount=(r.referralCount||0)+1;return r;});
+        await db.ref('transactions').push({userId:startParam,type:'referral',amount:bonus,timestamp:Date.now(),note:'রেফারেল বোনাস: '+u.name});
+      }else{u.referralStatus='pending';}
+      await db.ref('referrals/'+startParam+'/'+uid).set(true);
+    }
+  }
+  await ref.set(u);uData=u;
+}
+
+function showBan(r){$id('ov-ban-msg').textContent=r||'আপনার অ্যাকাউন্ট ব্লক করা হয়েছে।';$id('ov-ban').style.display='flex';$id('app').style.display='none';}
+
+/* RENDER */
+function renderAll(){
+  if(!uData||!cfg)return;
+  const u=uData,s=cfg;const nm=u.name||'ব্যবহারকারী';
+  $id('hdr-name').textContent=nm;$id('hdr-vip').textContent=vip(u.totalAds||0);
+  if(u.photo){$id('hdr-ava').innerHTML=`<img src="${u.photo}" onerror="this.remove()" style="width:100%;height:100%;object-fit:cover;" alt="">`;}
+  $id('hdr-bal').textContent=fbt(u.balance);
+  $id('hs-w').textContent=fbt(Math.max(0,(u.totalEarned||0)-(u.balance||0)),2);
+  $id('hs-a').textContent=u.totalAds||0;$id('hs-r').textContent=u.referralCount||0;
+  const lim=parseInt(s.dailyLimit||10),tod=u.todayAds||0;
+  $id('ad-today').textContent=tod;$id('ad-limit').textContent=lim;
+  $id('ad-prog').style.width=Math.min(100,(tod/lim)*100)+'%';
+  $id('ad-earn-badge').textContent=fbt(s.perAdEarning||0.1,2)+'/টি';
+  updateAdBtn();updateSpinBtn();updateCIBtn();
+  $id('ci-streak').textContent=(u.checkInStreak||0)+' দিন';
+  const ciRew=parseFloat(s.checkInBaseReward||0.5)+((u.checkInStreak||0)*parseFloat(s.checkInStreakBonus||0.1));
+  $id('ci-rew').textContent=fbt(ciRew,2);
+  buildCIStrip();buildCardDraw();cardPicked=u.lastCardDate===dhaka();
+  $id('spin-range').textContent=`${fbt(s.spinMinReward||0.1,2)} – ${fbt(s.spinMaxReward||2,2)}`;
+  buildVIP();
+  $id('w-bal').textContent=fbt(u.balance);$id('w-min').textContent=fbt(s.minWithdraw||50,2);
+  $id('ref-count').textContent=u.referralCount||0;$id('ref-earn').textContent=fbt(u.referralEarned,2);
+  $id('ref-bonus').textContent=fbt(s.referralBonus||5,2);
+  $id('ref-link').textContent=`t.me/${s.botUsername||'your_bot'}?startapp=${uid}`;
+  $id('prof-ava').innerHTML=u.photo?`<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover;" alt="">`:((nm[0]||'?').toUpperCase());
+  $id('prof-name').textContent=nm;$id('prof-un').textContent=u.username?'@'+u.username:'—';
+  $id('prof-vip').textContent=vip(u.totalAds||0);
+  $id('ps-bal').textContent=fbt(u.balance,2);$id('ps-earn').textContent=fbt(u.totalEarned,2);
+  $id('ps-ads').textContent=u.totalAds||0;$id('ps-rearn').textContent=fbt(u.referralEarned,2);
+  $id('prof-join').textContent=u.joinDate?new Date(u.joinDate).toLocaleDateString('en-GB'):'—';
+}
+
+function updateAdBtn(){
+  if(!uData||!cfg)return;
+  const lim=parseInt(cfg.dailyLimit||10),tod=uData.todayAds||0;
+  const btn=$id('watch-btn'),txt=$id('watch-txt'),cd=$id('cd-box');
+  if(tod>=lim){btn.disabled=true;txt.textContent='আজকের সীমা পূর্ণ';cd.style.display='flex';startCD();}
+  else{btn.disabled=false;txt.textContent='বিজ্ঞাপন দেখুন ও আয় করুন';cd.style.display='none';if(cdInt){clearInterval(cdInt);cdInt=null;}}
+}
+function startCD(){if(cdInt)clearInterval(cdInt);const u=()=>$id('cd-time').textContent=hms(toMid());u();cdInt=setInterval(u,1000);}
+function updateSpinBtn(){if(!uData)return;const done=uData.lastSpinDate===dhaka();$id('spin-btn').disabled=spinning||done;$id('spin-btn-txt').textContent=done?'স্পিন সম্পন্ন ✓':'⚡ স্পিন করুন!';}
+function updateCIBtn(){if(!uData)return;const done=uData.lastCheckIn===dhaka();$id('ci-btn').disabled=done;$id('ci-btn').textContent=done?'চেক-ইন সম্পন্ন ✓':'চেক-ইন করুন';}
+
+function buildCIStrip(){
+  const streak=uData?.checkInStreak||0;
+  const days=['সোম','মঙ্গ','বুধ','বৃহ','শুক্র','শনি','রবি'];
+  const dw=new Date().getDay();
+  $id('ci-strip').innerHTML=days.map((d,i)=>{
+    const done=i<Math.min(streak,7),isToday=(dw===0?6:dw-1)===i;
+    return`<div class="ci-day ${done?'done':''} ${isToday&&!done?'today':''}">
+      ${done?`<svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M2.5 7.5L5.5 10.5L11.5 4.5" stroke="${isToday?'#6FBF82':'#6FBF82'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`:`<span class="ci-day-n">${i+1}</span>`}
+      <span style="font-size:8px;">${d}</span>
+    </div>`;
+  }).join('');
+}
+
+function buildVIP(){
+  const t=cfg.vipThresholds||{bronze:50,silver:200,gold:500,diamond:1000};
+  const ads=uData?.totalAds||0,cur=vip(ads);
+  const tiers=[{l:'Bronze',c:'bronze',n:t.bronze,e:'🥉'},{l:'Silver',c:'silver',n:t.silver,e:'🥈'},{l:'Gold',c:'gold',n:t.gold,e:'🥇'},{l:'Diamond',c:'diamond',n:t.diamond,e:'💎'}];
+  $id('vip-strip').innerHTML=tiers.map(v=>`<div class="vip-chip ${v.c} ${cur===v.l+' VIP'?'active-vip':''}"><span class="vip-n">${v.e}</span><span>${v.l} VIP</span><span style="opacity:.5;font-size:9px;">${v.n}+ ads</span></div>`).join('');
+}
+
+/* AD */
+async function watchAd(){
+  if(!uData||!cfg)return;
+  const lim=parseInt(cfg.dailyLimit||10);
+  if((uData.todayAds||0)>=lim){toast('আজকের সীমা পূর্ণ।','w');return;}
+  haptic('medium');
+  const btn=$id('watch-btn'),txt=$id('watch-txt');
+  btn.disabled=true;txt.innerHTML='<span class="spin-sm"></span>';
+  const fn='show_'+(cfg.adZoneId||'');
+  if(typeof window[fn]!=='function'){toast('বিজ্ঞাপন লোড হয়নি।','e');updateAdBtn();return;}
+  try{window[fn]().then(()=>creditAd()).catch(()=>{toast('বিজ্ঞাপন বাতিল।','w');updateAdBtn();});}
+  catch(e){toast('সমস্যা।','e');updateAdBtn();}
+}
+async function creditAd(){
+  const earn=parseFloat(cfg.perAdEarning||0.1),td=dhaka();
+  try{
+    await db.ref('users/'+uid).transaction(u=>{
+      if(!u)return u;const lim=parseInt(cfg.dailyLimit||10),cur=u.lastAdDate===td?(u.todayAds||0):0;
+      if(cur>=lim)return;u.balance=(u.balance||0)+earn;u.totalEarned=(u.totalEarned||0)+earn;
+      u.todayAds=cur+1;u.lastAdDate=td;u.totalAds=(u.totalAds||0)+1;return u;
+    });
+    await db.ref('transactions').push({userId:uid,type:'ad',amount:earn,timestamp:Date.now(),note:'বিজ্ঞাপন দেখে আয়'});
+    haptic('success');toast(`${fbt(earn,2)} আয় হয়েছে! ⚡`,'s');
+    await checkRefUnlock();
+  }catch(e){toast('ক্রেডিট ব্যর্থ।','e');}
+}
+async function checkRefUnlock(){
+  if(!uData||uData.referralStatus!=='pending'||!uData.referredBy)return;
+  const unlock=parseInt(cfg.referralUnlockAds||5);
+  if((uData.totalAds||0)+1<unlock)return;
+  const dup=await db.ref('referrals/'+uData.referredBy+'/'+uid).once('value');if(!dup.exists())return;
+  const bonus=parseFloat(cfg.referralBonus||5);
+  await db.ref('users/'+uData.referredBy).transaction(r=>{if(!r)return r;r.balance=(r.balance||0)+bonus;r.totalEarned=(r.totalEarned||0)+bonus;r.referralEarned=(r.referralEarned||0)+bonus;r.referralCount=(r.referralCount||0)+1;return r;});
+  await db.ref('users/'+uid+'/referralStatus').set('verified');
+  await db.ref('transactions').push({userId:uData.referredBy,type:'referral',amount:bonus,timestamp:Date.now(),note:'রেফারেল বোনাস: '+(uData.name||'')});
+}
+
+/* CHECK-IN */
+async function doCheckIn(){
+  const td=dhaka();
+  if(uData.lastCheckIn===td){toast('আজকের চেক-ইন সম্পন্ন!','i');return;}
+  haptic('medium');$id('ci-btn').disabled=true;$id('ci-btn').textContent='অপেক্ষা করুন…';
+  const streak=uData.checkInStreak||0;
+  const yd=new Date();yd.setDate(yd.getDate()-1);
+  const ydStr=yd.toLocaleString('en-US',{timeZone:'Asia/Dhaka'}).split(',')[0];
+  const ns=uData.lastCheckIn===ydStr?streak+1:1;
+  const rew=parseFloat(cfg.checkInBaseReward||0.5)+((ns-1)*parseFloat(cfg.checkInStreakBonus||0.1));
+  try{
+    await db.ref('users/'+uid).transaction(u=>{if(!u)return u;u.balance=(u.balance||0)+rew;u.totalEarned=(u.totalEarned||0)+rew;u.lastCheckIn=td;u.checkInStreak=ns;return u;});
+    await db.ref('transactions').push({userId:uid,type:'bonus',amount:rew,timestamp:Date.now(),note:`চেক-ইন বোনাস (ধারা: ${ns})`});
+    haptic('success');toast(`চেক-ইন! ${fbt(rew,2)} ⚡`,'s');
+  }catch(e){toast('চেক-ইন ব্যর্থ।','e');$id('ci-btn').disabled=false;$id('ci-btn').textContent='চেক-ইন করুন';}
+}
+
+/* CHART */
+async function buildChart(){
+  const cont=$id('chart-bars');
+  const lbls=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);lbls.push(d.toLocaleDateString('en-US',{weekday:'short'}));}
+  const vals=new Array(7).fill(0);
+  try{
+    const snap=await db.ref('transactions').orderByChild('userId').equalTo(uid).once('value');
+    Object.values(snap.val()||{}).forEach(t=>{
+      if(t.type==='ad'||t.type==='bonus'){const day=new Date(t.timestamp).toLocaleDateString('en-US',{weekday:'short'});const idx=lbls.indexOf(day);if(idx>=0)vals[idx]+=(t.amount||0);}
+    });
+  }catch(e){}
+  const mx=Math.max(...vals,0.01);
+  cont.innerHTML=lbls.map((l,i)=>`<div class="c-bar ${i===6?'today':''}" style="height:${Math.max(6,(vals[i]/mx)*90)}px"><span class="c-lbl">${l}</span></div>`).join('');
+}
+
+/* LEADERBOARD */
+async function loadLB(){
+  const cont=$id('lb-list');
+  try{
+    const snap=await db.ref('users').orderByChild('totalEarned').limitToLast(5).once('value');
+    const sorted=Object.entries(snap.val()||{}).sort((a,b)=>(b[1].totalEarned||0)-(a[1].totalEarned||0));
+    if(!sorted.length){cont.innerHTML='<div class="empty-box"><p>এখনও ডেটা নেই</p></div>';return;}
+    const rc=['r1','r2','r3','rn','rn'];const meds=['🥇','🥈','🥉'];
+    cont.innerHTML=sorted.map(([id,u],i)=>`<div class="lb-item"><div class="lb-rank ${rc[i]||'rn'}">${i<3?meds[i]:i+1}</div><div class="lb-name">${u.name||'ব্যবহারকারী'}</div>${id===uid?'<span class="you-tag">আপনি</span>':''}<div class="lb-amt">${fbt(u.totalEarned,2)}</div></div>`).join('');
+  }catch(e){cont.innerHTML='<div class="empty-box"><p>লোড ব্যর্থ</p></div>';}
+}
+
+/* REFERRAL */
+function copyRef(){const l=`https://t.me/${cfg.botUsername||'your_bot'}?startapp=${uid}`;navigator.clipboard.writeText(l).then(()=>{haptic('medium');toast('লিংক কপি!','s');}).catch(()=>toast('কপি ব্যর্থ।','e'));}
+function shareRef(){haptic('medium');const l=`https://t.me/${cfg.botUsername||'your_bot'}?startapp=${uid}`;tg?.openTelegramLink?.(`https://t.me/share/url?url=${encodeURIComponent(l)}&text=${encodeURIComponent((cfg.appName||'TDF Earn')+'য়ে যোগ দিন!')}`);}
+async function loadRefUsers(){
+  const cont=$id('ref-users');
+  try{
+    const snap=await db.ref('referrals/'+uid).once('value');
+    if(!snap.val()){cont.innerHTML='<div class="empty-box" style="padding:20px;"><p>এখনও কেউ নেই</p></div>';return;}
+    const ids=Object.keys(snap.val());
+    const us=await Promise.all(ids.map(id=>db.ref('users/'+id).once('value')));
+    cont.innerHTML='';
+    us.forEach(s=>{if(!s.exists())return;const u=s.val();
+      cont.innerHTML+=`<div class="ref-user-item"><div class="ref-ava">${(u.name||'?')[0].toUpperCase()}</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);">${u.name||'অজানা'}</div><div style="font-size:10px;color:var(--text2);">${u.joinDate?new Date(u.joinDate).toLocaleDateString('en-GB'):'—'}</div></div><div class="status-dot ${u.referralStatus==='verified'?'v':'p'}"></div></div>`;
+    });
+    if(!cont.innerHTML)cont.innerHTML='<div class="empty-box" style="padding:20px;"><p>কোনো রেফারেল নেই</p></div>';
+  }catch(e){}
+}
+
+/* WALLET */
+async function loadMethods(){
+  const cont=$id('method-grid');
+  try{
+    const snap=await db.ref('withdrawMethods').orderByChild('order').once('value');
+    const ms=snap.val()||{};methods=ms;
+    const active=Object.entries(ms).filter(([,m])=>m.isActive);
+    if(!active.length){cont.innerHTML='<div class="empty-box"><p>কোনো পেমেন্ট পদ্ধতি নেই</p></div>';return;}
+    const mIco={mobile:'📱',wallet:'💳',bank:'🏦',card:'💰'};
+    cont.innerHTML=active.map(([id,m])=>`<div class="method-card" id="mc-${id}" onclick="selectM('${id}')"><div class="method-ico-w">${mIco[m.iconKey||'mobile']||'📱'}</div><div style="flex:1;min-width:0;"><div class="method-nm">${m.name}</div><div class="method-mn">সর্বনিম্ন ${fbt(m.minAmount||cfg.minWithdraw||50,2)}</div></div><div class="method-chk" id="mchk-${id}"></div></div>`).join('');
+  }catch(e){}
+}
+function selectM(id){
+  selMethod=id;haptic('light');
+  document.querySelectorAll('.method-card').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('[id^="mchk-"]').forEach(c=>{c.classList.remove('on');c.innerHTML='';});
+  $id('mc-'+id)?.classList.add('sel');
+  const chk=$id('mchk-'+id);chk.classList.add('on');chk.innerHTML='<svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M2 6L5 9L10 3" stroke="#EAF5EC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const m=methods[id];
+  $id('w-acct-lbl').textContent=m?.accountLabel||'অ্যাকাউন্ট নম্বর';
+  const ins=$id('w-instr');ins.textContent=m?.instructions||'';ins.style.display=m?.instructions?'block':'none';
+  $id('w-hint').textContent=`সর্বনিম্ন ${fbt(m?.minAmount||cfg.minWithdraw||50,2)}`;
+  $id('w-form-wrap').style.display='block';
+  setTimeout(()=>$id('w-form-wrap').scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+function checkWAmt(){
+  if(!selMethod)return;
+  const m=methods[selMethod],min=parseFloat(m?.minAmount||cfg.minWithdraw||50);
+  const v=parseFloat($id('w-amt').value||0),bal=parseFloat(uData?.balance||0);
+  const hint=$id('w-hint'),btn=$id('w-submit-btn');
+  if(v<min){hint.textContent=`সর্বনিম্ন ${fbt(min,2)}`;hint.style.color='var(--red)';btn.disabled=true;}
+  else if(v>bal){hint.textContent='পর্যাপ্ত ব্যালেন্স নেই';hint.style.color='var(--red)';btn.disabled=true;}
+  else{hint.textContent=`উপলব্ধ: ${fbt(bal)}`;hint.style.color='var(--text2)';btn.disabled=false;}
+}
+async function submitW(){
+  if(!selMethod){toast('পেমেন্ট পদ্ধতি বেছে নিন।','w');return;}
+  const amt=parseFloat($id('w-amt').value),acct=$id('w-acct').value.trim();
+  const m=methods[selMethod],min=parseFloat(m?.minAmount||cfg.minWithdraw||50),bal=parseFloat(uData?.balance||0);
+  if(!amt||amt<min){toast(`সর্বনিম্ন ${fbt(min,2)}`,'w');return;}
+  if(amt>bal){toast('পর্যাপ্ত ব্যালেন্স নেই।','w');return;}
+  if(!acct){toast('অ্যাকাউন্ট নম্বর দিন।','w');return;}
+  haptic('medium');$id('w-submit-btn').disabled=true;$id('w-submit-btn').textContent='প্রক্রিয়াকরণ…';
+  try{
+    let ok=false;
+    await db.ref('users/'+uid).transaction(u=>{if(!u||u.balance<amt)return;u.balance=(u.balance||0)-amt;ok=true;return u;});
+    if(!ok){toast('ব্যালেন্স পর্যাপ্ত নয়।','e');$id('w-submit-btn').disabled=false;$id('w-submit-btn').textContent='উত্তোলন করুন';return;}
+    await db.ref('withdrawals').push({userId:uid,userName:uData.name||'',amount:amt,methodId:selMethod,methodName:m?.name||'',account:acct,status:'pending',timestamp:Date.now(),adminNote:''});
+    await db.ref('transactions').push({userId:uid,type:'withdraw',amount:-amt,timestamp:Date.now(),note:`উত্তোলন: ${m?.name||''} - ${acct}`});
+    haptic('success');toast(`আবেদন সফল! ${fbt(amt,2)} ⚡`,'s');
+    $id('w-amt').value='';$id('w-acct').value='';loadWHist();
+  }catch(e){toast('উত্তোলন ব্যর্থ।','e');}
+  finally{$id('w-submit-btn').disabled=false;$id('w-submit-btn').textContent='উত্তোলন করুন';}
+}
+async function loadWHist(){
+  const cont=$id('w-hist');
+  try{
+    const snap=await db.ref('withdrawals').orderByChild('userId').equalTo(uid).limitToLast(15).once('value');
+    if(!snap.val()){cont.innerHTML='<div class="empty-box" style="padding:20px;"><p>কোনো উত্তোলন নেই</p></div>';return;}
+    const sorted=Object.values(snap.val()).sort((a,b)=>b.timestamp-a.timestamp);
+    const IM={pending:'⏳',approved:'✅',rejected:'❌'};
+    cont.innerHTML=sorted.map(w=>`<div class="w-hist-item"><div class="w-hist-ico">${IM[w.status]||'⏳'}</div><div style="flex:1;min-width:0;"><div class="w-hist-nm">${w.methodName} · ${w.account}</div><div class="w-hist-dt">${new Date(w.timestamp).toLocaleDateString('en-GB')}</div>${w.adminNote?`<div style="font-size:10px;color:var(--text2);margin-top:2px;">${w.adminNote}</div>`:''}</div><div class="w-hist-amt ${w.status==='approved'?'a':w.status==='rejected'?'r':'p'}">${fbt(w.amount,2)}</div></div>`).join('');
+  }catch(e){}
+}
+
+/* TX */
+async function loadTx(){
+  const cont=$id('tx-list');
+  try{
+    const snap=await db.ref('transactions').orderByChild('userId').equalTo(uid).limitToLast(30).once('value');
+    if(!snap.val()){cont.innerHTML='<div class="empty-box"><p>কোনো লেনদেন নেই</p></div>';return;}
+    const sorted=Object.values(snap.val()).sort((a,b)=>b.timestamp-a.timestamp);
+    const ICO={ad:'📺',bonus:'⭐',referral:'👥',withdraw:'💸',admin_adjust:'⚙️'};
+    const BG={ad:'rgba(90,143,105,0.08)',bonus:'rgba(255,184,0,0.08)',referral:'rgba(111,191,130,0.08)',withdraw:'rgba(255,61,90,0.08)',admin_adjust:'rgba(143,188,143,0.08)'};
+    cont.innerHTML=sorted.map(tx=>{const pos=tx.amount>=0;return`<div class="tx-item"><div class="tx-ico" style="background:${BG[tx.type]||BG.bonus};border:1px solid rgba(255,255,255,0.06);">${ICO[tx.type]||'💰'}</div><div style="flex:1;min-width:0;"><div class="tx-note">${tx.note||tx.type}</div><div class="tx-date">${new Date(tx.timestamp).toLocaleDateString('en-GB')}</div></div><div class="tx-amt ${pos?'pos':'neg'}">${pos?'+':''}${fbt(tx.amount,3)}</div></div>`;}).join('');
+  }catch(e){}
+}
+
+/* TASKS */
+async function loadTasks(){
+  const cont=$id('task-list');
+  try{
+    const snap=await db.ref('settings/tasks').once('value'),tasks=snap.val();
+    if(!tasks){cont.innerHTML='<div class="empty-box"><p>কোনো টাস্ক নেই</p></div>';return;}
+    const cSnap=await db.ref('users/'+uid+'/completedTasks').once('value');
+    const comp=cSnap.val()||{};
+    cont.innerHTML=Object.entries(tasks).map(([id,t])=>{const done=!!comp[id];return`<div class="task-item"><div class="task-ico"><svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M4 10L8 14L16 6" stroke="#5A8F69" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div style="flex:1;min-width:0;"><div class="task-name">${t.name}</div><div class="task-rew">+${fbt(t.reward,2)}</div></div><button class="claim-btn ${done?'done':''}" ${done?'disabled':''} onclick="claimTask('${id}',${t.reward})">${done?'✓ সম্পন্ন':'ক্লেম'}</button></div>`;}).join('');
+  }catch(e){cont.innerHTML='<div class="empty-box"><p>লোড ব্যর্থ</p></div>';}
+}
+async function claimTask(id,reward){
+  haptic('medium');
+  try{
+    const c=await db.ref('users/'+uid+'/completedTasks/'+id).once('value');
+    if(c.exists()){toast('ইতিমধ্যে সম্পন্ন।','i');return;}
+    await db.ref('users/'+uid).transaction(u=>{if(!u)return u;u.balance=(u.balance||0)+reward;u.totalEarned=(u.totalEarned||0)+reward;if(!u.completedTasks)u.completedTasks={};u.completedTasks[id]=Date.now();return u;});
+    await db.ref('transactions').push({userId:uid,type:'bonus',amount:reward,timestamp:Date.now(),note:'টাস্ক বোনাস'});
+    haptic('success');toast(`টাস্ক! ${fbt(reward,2)} ⚡`,'s');loadTasks();
+  }catch(e){toast('দাবি ব্যর্থ।','e');}
+}
+
+init();
+</script>
+</body>
+</html>
